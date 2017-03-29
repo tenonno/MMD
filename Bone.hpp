@@ -162,6 +162,9 @@ namespace PMX
 
 		bool 軸固定;
 
+
+		// VMD にはグローバル軸基準の数値が入っているので使わない
+		// エディタでアニメーションを編集する時に便利らしい
 		bool ローカル軸;
 
 		bool 外部親変形;
@@ -187,16 +190,21 @@ namespace PMX
 
 		bool bbbb = false;
 
+		// VMD のキーフレームによる移動量
+		Float3 keyframeTranslate;
+		// VMD のキーフレームによる回転量
+		Quaternion keyframeRotate;
+
 		// ユーザー操作による 回転／移動量 | PMD / PMXエディタ内ではスケール値も所持
 		Vec3 translate;
 		Quaternion rotate;
 
 		// ボーンモーフによる 回転／移動量
-		Vec3 _morph_translate;
+		Float3 _morph_translate;
 		Quaternion _morph_rotate;
 
 		// 付与ありの場合     付与回転／付与移動量 | 保存しておくことで多重付与が可能になる
-		Vec3 _f_translate;
+		Float3 _f_translate;
 		Quaternion _f_rotate;
 
 		// IKリンクの場合     IK回転量
@@ -204,19 +212,28 @@ namespace PMX
 
 
 		// ボーン変形処理によるローカル変形状態
-		Mat4x4 localTransformMatrix;
+		Mat4x4 localMatrix;
 
-		Vec3 localTranslate;
+		Float3 localTranslate;
 		
 		// 頂点など形状変形用のグローバル変形状態
-		Mat4x4 globalTransformMatrix;
+		Mat4x4 globalMatrix;
 		Quaternion vvv;
+
+		Quaternion globalRotate;
+		Vec3 globalTranslate;
 
 
 		bool transformed = false;
 
 		void reset()
 		{
+			globalTranslate = Vec3::Zero;
+			globalRotate = Quaternion::Identity();
+
+			keyframeTranslate = Vec3::Zero;
+			keyframeRotate = Quaternion::Identity();
+
 			付与情報計算済 = false;
 			transformed = false;
 			bbbb = false;
@@ -227,8 +244,8 @@ namespace PMX
 			_f_translate = Vec3::Zero;
 			_f_rotate = Quaternion::Identity();
 			_ik_r = Quaternion::Identity();
-			localTransformMatrix = Mat4x4::Identity();
-			globalTransformMatrix = Mat4x4::Identity();
+			localMatrix = Mat4x4::Identity();
+			globalMatrix = Mat4x4::Identity();
 
 		}
 
@@ -256,6 +273,8 @@ namespace PMX
 
 		int 変形階層;
 
+		// 変形済み接続先ボーン座標
+		Vec3 transformedConnectBonePosition;
 
 		Vec3 connectBonePosition;
 		// ↑ or ↓

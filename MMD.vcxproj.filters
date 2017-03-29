@@ -425,5 +425,8 @@
     <ClInclude Include="Material.hpp">
       <Filter>ソース ファイル\MMD\PMX</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.hpp">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

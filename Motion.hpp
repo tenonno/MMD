@@ -61,9 +61,6 @@ class Motion
 
 public:
 
-	Array<VMD::BoneFrame> boneFrames;
-
-
 	std::unordered_map<String, Array<VMD::BoneFrame>> frames;
 
 
@@ -91,8 +88,13 @@ public:
 
 			reader.read(name, 15);
 
+
 			boneFrame.name = Widen(name);
 
+			if (boneFrame.name == L"右目動")
+			{
+				MessageBox::Show(L"右目動き");
+			}
 
 			/*
 				DWORD frame; // フレーム番号
@@ -119,8 +121,6 @@ public:
 			boneFrame.frame = frameNum;
 
 
-			boneFrames.emplace_back(boneFrame);
-
 
 			frames[boneFrame.name].emplace_back(boneFrame);
 
@@ -139,6 +139,8 @@ public:
 
 
 		const auto &boneFrames = frames[name];
+
+		if (boneFrames.size() == 0) MessageBox::Show(Format(L"次のボーン名にキーフレームは存在しません: ", name));
 
 		// キーフレームが 1 つしかないなら
 		if (boneFrames.size() == 1) return boneFrames[0];
