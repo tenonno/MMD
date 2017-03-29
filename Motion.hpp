@@ -95,10 +95,6 @@ public:
 
 			boneFrame.name = Widen(name);
 
-			if (boneFrame.name == L"右目動")
-			{
-				MessageBox::Show(L"右目動き");
-			}
 
 			/*
 				DWORD frame; // フレーム番号

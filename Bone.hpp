@@ -186,9 +186,6 @@ namespace PMX
 	struct BoneTransformParameter
 	{
 
-		bool 付与情報計算済 = false;
-
-		bool bbbb = false;
 
 		// VMD のキーフレームによる移動量
 		Float3 keyframeTranslate;
@@ -215,7 +212,7 @@ namespace PMX
 		Mat4x4 localMatrix;
 
 		Float3 localTranslate;
-		
+
 		bool transformed = false;
 
 		void reset()
@@ -223,9 +220,7 @@ namespace PMX
 			keyframeTranslate = Vec3::Zero;
 			keyframeRotate = Quaternion::Identity();
 
-			付与情報計算済 = false;
 			transformed = false;
-			bbbb = false;
 			translate = Vec3::Zero;
 			rotate = Quaternion::Identity();
 			_morph_translate = Vec3::Zero;
@@ -275,7 +270,7 @@ namespace PMX
 
 
 		BoneTransformParameter transformParameter;
-		
+
 
 
 		double 付与率 = 1.0;

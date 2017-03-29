@@ -51,6 +51,13 @@ namespace PMX
 			return value;
 		}
 
+		template<>
+		bool value()
+		{
+			return value<uint8>();
+		}
+
+		
 
 		template<>
 		Vec4 value()
@@ -135,20 +142,6 @@ namespace PMX
 
 
 
-
-
-
-		uint8 readByte()
-		{
-			uint8 byte;
-			BinaryReader::read(&byte, 1);
-			return byte;
-		}
-
-		bool readBool()
-		{
-			return readByte() > 0;
-		}
 
 
 		int readInt()
