@@ -15,3 +15,11 @@ inline String GetDirectory(const FilePath &path)
 	return directory;
 
 }
+
+
+
+template<class ...Args>
+inline void $(const Args &...args)
+{
+	MessageBox::Show(Format(args...));
+}

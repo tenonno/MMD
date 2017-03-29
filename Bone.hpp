@@ -215,8 +215,13 @@ namespace PMX
 
 		bool transformed = false;
 
+
+		bool •t—^‰ñ“]ŒvZÏ = false;
+
 		void reset()
 		{
+			•t—^‰ñ“]ŒvZÏ = false;
+
 			keyframeTranslate = Vec3::Zero;
 			keyframeRotate = Quaternion::Identity();
 
@@ -243,7 +248,6 @@ namespace PMX
 		Mat4x4 animationMatrix;
 
 
-		Vec3 globalTranslate;
 
 		Vec3 transformedPosition;
 

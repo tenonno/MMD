@@ -179,8 +179,11 @@ void Main()
 	const auto label = L"Transform Bone";
 	gui.add(L"ts1", GUIToggleSwitch::Create(label, label, true));
 
+	
 
-
+	// $(vertexList.size());
+	
+	// $(sizeof(Vertex));
 
 	const auto defaultLight = Graphics3D::GetLight(0);
 	Graphics3D::SetLight(0, Light::None());
@@ -215,12 +218,12 @@ void Main()
 
 		Log(Format(L"frame: ", frame), font1);
 
-
 		// 0. すべてのボーンのローカル／グローバル変形状態を初期化
-		for (auto &bone : A$Physics_bones)
+		for (auto &bone : bones)
 		{
-			bone->transformParameter.reset();
+			bone.transformParameter.reset();
 		}
+
 
 		// 1. ユーザー操作の回転／移動量をすべてのボーンに設定
 		// 2. ボーンモーフによる回転／移動量を対応するボーンに設定
@@ -231,19 +234,14 @@ void Main()
 			auto name = bone.name;
 
 			// キーフレームが存在しない
-			const auto count = motion.frames.count(name);
-			if (!count) continue;
-
-
-			// 名前が登録されているが、キーフレームの数が 0 の場合
-			// 原因不明のバグ
-			if (!motion.frames[name].size()) continue;
+			if (!motion.has(name)) continue;
 
 
 			// frame 位置のボーン情報を取得する
 			const auto boneStatus = motion.get(name, frame);
 
 
+			// キーフレームが 2 つ以上あるボーンをデバッグ表示
 			if (motion.frames[name].size() > 1)
 			{
 				Log(Format(name, L": ", motion.frames[name].size()), font2);
@@ -261,12 +259,17 @@ void Main()
 
 		rootBone.transformParameter.translate = Vec3::Zero;
 
+
+
+		while (true)
+		{
+			bool end = true;
+
 		// ボーンのローカル移動量、回転量を計算する
 		for (auto &p_bone : A$Physics_bones)
 		{
 
 			Bone &bone = *p_bone;
-
 
 
 
@@ -299,9 +302,16 @@ void Main()
 			if (付与_parent != nullptr)
 			{
 
+				if (!付与_parent->transformParameter.付与回転計算済)
+				{
+					end = false;
+					continue;
+				}
+
 				//  1.1 ローカル付与の場合 : * 付与親のローカル変形量(行列)の回転成分 ※ローカル付与優先
 				if (bone.flag.ローカル付与)
 				{
+					MessageBox::Show(L"ローカル付与");
 
 					rotate *= MatrixToQuaternion(付与_parent->transformParameter.localMatrix);
 
@@ -313,7 +323,6 @@ void Main()
 					// 付与親のローカル移動量:ボーン移動量として計算 ※暫定対応
 					// ボーン位置(= ローカル行列の4行1 / 2 / 3列要素) - 初期ボーン位置
 
-					MessageBox::Show(L"ローカル付与");
 
 				}
 				else
@@ -323,19 +332,28 @@ void Main()
 					// ??????????
 					if (bone.flag.回転付与)
 					{
-						rotate *= 付与_parent->transformParameter._f_rotate;
+						
+						// rotate *= 付与_parent->transformParameter._f_rotate;
+
+						rotate = 付与_parent->transformParameter._f_rotate ;
+
 					}
+
+
 					// <> 付与ボーンではない場合 : * 付与親の回転 * 付与親の回転モーフ
 					else
 					{
+						/*
+
 						rotate *= 付与_parent->transformParameter.rotate;
 
 						rotate = rotate * 付与_parent->transformParameter._morph_rotate;
 
-
+						*/
 					}
 
 
+					/*
 					if (bone.flag.移動付与)
 					{
 						translate += 付与_parent->transformParameter._f_translate;
@@ -343,7 +361,7 @@ void Main()
 						translate += 付与_parent->transformParameter._morph_translate;
 					}
 
-
+					*/
 
 				}
 			}
@@ -353,18 +371,19 @@ void Main()
 			// ??????????
 			if (付与_parent != nullptr && 付与_parent->flag.IK)
 			{
-				rotate *= 付与_parent->transformParameter._ik_r;
+				// rotate *= 付与_parent->transformParameter._ik_r;
 			}
+
+
 
 			// 1.3 付与率が1以外の場合 : 回転量を付与率で補正(Quaternion.Slerp()想定)
 			// 1.2 付与率が1以外の場合 : 移動量を付与率で補正(付与率乗算でOK)
-			if (bone.付与率 != 1.0)
-			{
-				Math::Slerp(Quaternion::Identity(), rotate, bone.付与率);
 
-				translate *= bone.付与率;
+			rotate *= bone.transformParameter.keyframeRotate;
 
-			}
+			rotate = Math::Slerp(Quaternion::Identity(), rotate, bone.付与率);
+
+			translate *= bone.付与率;
 
 
 
@@ -372,12 +391,24 @@ void Main()
 			// 1.4 付与親のIKリンク～回転モーフ(付与率で補正済み)～回転モーフ を当該ボーンの付与回転量として保存(別の付与ボーンの付与親になった場合の多重付与変形用)
 			// ??????????
 			bone.transformParameter._f_rotate = rotate;
+
+
 			// 1.3 親付与移動量(付与率で補正済み)～移動モーフ を当該ボーンの付与移動量として保存(別の付与ボーンの付与親になった場合の多重付与変形用)
 			// ??????????
 			bone.transformParameter._f_translate = translate;
 
+			bone.transformParameter.付与回転計算済 = true;
+
+
+
+
+			translate += bone.transformParameter.keyframeTranslate;
+
+
+
+
 			// 2. 当該ボーンの回転量追加 : * 回転 * 回転モーフ
-			rotate *= bone.transformParameter.rotate * bone.transformParameter._morph_rotate;
+			//rotate *= bone.transformParameter._morph_rotate;
 
 			bone.transformParameter.rotate = rotate;
 
@@ -387,43 +418,26 @@ void Main()
 
 
 
-
-
-			bone.transformParameter.translate += bone.transformParameter.keyframeTranslate;
-			bone.transformParameter.rotate *= bone.transformParameter.keyframeRotate;
-
-
-
-
-			/*
-			// 独自の処理
-			bone.transformParameter.translate =
-
-			bone.transformParameter.translate
-			-
-			parent.transformParameter.translate;
-
-			*/
-
-
 			// 3. 当該ボーンがIKリンク回転量を持つ場合 : *IKリンク回転量
 			// ??????????
 			if (bone.flag.IK)
 			{
-				bone.transformParameter.rotate *= bone.transformParameter._ik_r;
+				//bone.transformParameter.rotate *= bone.transformParameter._ik_r;
 			}
 
 
+			bone.transformParameter.translate = bone.transformParameter.keyframeTranslate;
+
 		}
 
+		if (end) break;
+		}
 
 
 		// ボーンのローカル変形行列を作る
 		for (Bone *p_bone : A$Physics_bones)
 		{
 			Bone &bone = *p_bone;
-
-			bone.globalTranslate = Vec3::Zero;
 
 
 			bone.transformParameter.localMatrix =

@@ -26,10 +26,10 @@ struct Vertex
 	int64 boneIndex3;
 	int64 boneIndex4;
 
-	double boneWeight1;
-	double boneWeight2;
-	double boneWeight3;
-	double boneWeight4;
+	float boneWeight1;
+	float boneWeight2;
+	float boneWeight3;
+	float boneWeight4;
 
 
 	float edgeScale;

@@ -319,6 +319,21 @@ public:
 	}
 
 
+	bool has(const String &key) 
+	{
+		// キーフレームが存在しない
+		if (!frames.count(key)) return false;
+
+		// 名前が登録されているが、キーフレームの数が 0 の場合
+		// 原因不明のバグ
+		if (!frames[key].size()) return false;
+
+		return true;
+
+	}
+
+
+
 private:
 
 	void sort()

@@ -91,7 +91,7 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
-      <Filter>ソース ファイル\MMD</Filter>
+      <Filter>ソース ファイル\MMD\PMX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
