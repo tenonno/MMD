@@ -68,6 +68,10 @@ void Main()
 		directory += (vv[i]) + L"/";
 	}
 
+	// Motion motion(L"Assets/reim/motion.vmd");
+
+	Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/サーバルメトロノーム.vmd");
+	// Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/test.vmd");
 
 
 	PMX::Reader reader(path);
@@ -404,6 +408,7 @@ void Main()
 	const auto $getBoneConnectPosition = [&bones](const Bone &bone) -> Vec3
 	{
 
+
 		if (bone.flag.connectType == BoneConnectType::Position)
 		{
 			return bone.transformedPosition + bone.transformedConnectBonePosition;
@@ -432,7 +437,7 @@ void Main()
 
 		bone.parentBoneIndex = reader.value(boneIndexSize);
 
-		bone.変形階層 = reader.readInt();
+		bone.変形階層 = reader.value<int>();
 
 
 
@@ -465,17 +470,16 @@ void Main()
 		n  : ボーンIndexサイズ  | 接続先ボーンのボーンIndex
 		*/
 
+		Vec3 connectPos;
 
 		if (flag.connectType == BoneConnectType::Index)
 		{
-			bone.connectBoneIndex = reader.fromSize(boneIndexSize);
+			bone.connectBoneIndex = reader.value(boneIndexSize);
 		}
 		if (flag.connectType == BoneConnectType::Position)
 		{
-			bone.connectBonePosition = reader.readVec3();
+			bone.connectBonePosition = reader.value<Vec3>();
 		}
-
-
 
 		/*
 		回転付与:1 または 移動付与:1 の場合
@@ -577,6 +581,44 @@ void Main()
 	}
 
 
+	// ボーンの BOf 行列を作る
+	for (auto &bone : bones)
+	{
+
+
+
+
+
+
+
+		Mat4x4 初期姿勢行列;
+
+
+		if (!$boneNoneConnect(bone))
+		{
+
+			// 接続先座標
+			auto connectPos = $getBoneConnectPosition(bone);
+
+			// ボーンから接続先に向かう回転
+			auto rotate = Quaternion(bone.position, connectPos).toMatrix();
+
+			初期姿勢行列 = rotate * Mat4x4::Translate(bone.position);
+
+		}
+		// 接続先がないなら
+		else
+		{
+			初期姿勢行列 = Mat4x4::Translate(bone.position);
+		}
+
+		bone.BOfMatrix = 初期姿勢行列.inverse();
+
+
+
+	}
+
+
 	auto モーフ数 = reader.value<int32>();
 
 
@@ -659,10 +701,6 @@ void Main()
 	Graphics3D::SetAmbientLight(ColorF(1.0));
 
 
-	Motion motion(L"Assets/reim/motion.vmd");
-
-	// Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/サーバルメトロノーム.vmd");
-	// Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/test.vmd");
 
 
 	// 物理演算前変形ボーン
@@ -832,12 +870,6 @@ void Main()
 			Bone &bone = *p_bone;
 
 
-			bone.transformParameter.translate = bone.transformParameter.keyframeTranslate;
-			bone.transformParameter.rotate = bone.transformParameter.keyframeRotate;
-
-
-
-			continue;
 
 
 			// 親ボーン
@@ -876,6 +908,8 @@ void Main()
 					rotate *= MatrixToQuaternion(付与_parent->transformParameter.localMatrix);
 
 					// 1.1 ローカル付与の場合 : *付与親のローカル移動量 ※ローカル付与優先
+
+					// TODO: localTranslate を削除して localMatrix の移動成分にする
 					translate += 付与_parent->transformParameter.localTranslate;
 
 					// 付与親のローカル移動量:ボーン移動量として計算 ※暫定対応
@@ -951,7 +985,16 @@ void Main()
 
 
 			// 2. 当該ボーンの移動量追加 : +移動 + 移動モーフ
-			bone.transformParameter.translate;// += translate + bone.transformParameter._morph_translate;
+			bone.transformParameter.translate += translate + bone.transformParameter._morph_translate;
+
+
+
+
+
+			bone.transformParameter.translate += bone.transformParameter.keyframeTranslate;
+			bone.transformParameter.rotate *= bone.transformParameter.keyframeRotate;
+
+
 
 
 			/*
@@ -1004,12 +1047,11 @@ void Main()
 
 		rootBone.transformParameter.transformed = true;
 
-		rootBone.transformParameter.globalMatrix = Mat4x4::Identity();
 
-		rootBone.transformParameter.globalTranslate = Vec3::Zero;
-		rootBone.transformParameter.globalRotate = Quaternion::Identity();
+		rootBone.BOfMatrix = Mat4x4::Identity();
+		rootBone.ボーンオフセット行列 = Mat4x4::Identity();
 
-
+		rootBone.animationMatrix = Mat4x4::Identity();
 
 		// 親 -> 子の順で変形するようにループ
 		while (true)
@@ -1024,12 +1066,7 @@ void Main()
 
 				if (bone.transformParameter.transformed) continue;
 
-				if (bone.parentBoneIndex == -1)
-				{
 
-					rootBone.transformParameter.localMatrix =
-						Mat4x4::Translate(bone.transformParameter.translate);
-				}
 
 				Bone &parent = bone.parentBoneIndex == -1 ? rootBone : bones[bone.parentBoneIndex];
 
@@ -1040,36 +1077,8 @@ void Main()
 				}
 
 
-				// ボーンのローカル座標
-				auto localPosition = (bone.position - parent.position);
-
-
-				// ボーン変換行列
-				// 親のローカル * 子のローカル
-				Mat4x4 matrix =
-
-					bone.transformParameter.localMatrix *
-					parent.transformParameter.localMatrix;
-
-
-				// グローバル回転量を更新
-				bone.transformParameter.globalRotate =
-					bone.transformParameter.rotate *
-					parent.transformParameter.globalRotate;
-
-				// グローバル移動量を更新
-				bone.transformParameter.globalTranslate = 
-					parent.transformParameter.globalTranslate +
-					bone.transformParameter.translate;
-
-
-
 
 				bone.transformParameter.transformed = true;
-
-
-				Mat4x4 automm = parent.transformParameter.globalRotate.toMatrix() *
-					Mat4x4::Translate(bone.transformParameter.translate);
 
 
 
@@ -1078,13 +1087,24 @@ void Main()
 				bone.transformedConnectBonePosition = bone.connectBonePosition + RandomVec3(0.1);
 
 
+				bone.animationMatrix = Mat4x4(
 
-				bone.transformedPosition =
-					// 変形後の親ボーン座標
-					parent.transformedPosition +
-					automm.transform(localPosition);
 
-				bone.animationMatrix = automm;
+					bone.BOfMatrix *
+
+					bone.transformParameter.localMatrix *
+
+					Mat4x4(bone.BOfMatrix).inverse()
+
+					*
+					parent.animationMatrix
+
+
+				);
+
+				bone.transformedPosition = bone.animationMatrix.transform(bone.position);
+
+
 
 
 				if (!gui.toggleSwitch(L"ts1").isRight)
@@ -1115,10 +1135,10 @@ void Main()
 
 				auto &bone1 = bones[vertex.boneIndex1];
 
-				auto lp = vertex.position - bone1.position;
+				auto lp = vertex.position;
 
 
-				vertex.transformedPosition = bone1.transformedPosition + bone1.animationMatrix.transform(lp);
+				vertex.transformedPosition = bone1.animationMatrix.transform(lp);
 
 			}
 
@@ -1128,16 +1148,16 @@ void Main()
 				auto &bone1 = bones[vertex.boneIndex1];
 				auto &bone2 = bones[vertex.boneIndex2];
 
-				auto lp1 = vertex.position - bone1.position;
-				auto lp2 = vertex.position - bone2.position;
+				auto lp1 = vertex.position;
+				auto lp2 = vertex.position;
 
 
-				auto v1 = bone1.transformedPosition + bone1.animationMatrix.transform(lp1);
-				auto v2 = bone2.transformedPosition + bone2.animationMatrix.transform(lp2);
+				auto v1 = bone1.animationMatrix.transform(lp1);
+				auto v2 = bone2.animationMatrix.transform(lp2);
 
 				Println(vertex.boneWeight1);
 
-				vertex.transformedPosition =  Math::Lerp(v1, v2, vertex.boneWeight1);
+				vertex.transformedPosition = Math::Lerp(v2, v1, vertex.boneWeight1);
 
 				// vertex.transformedPosition += RandomVec3(0.1);
 
@@ -1152,15 +1172,15 @@ void Main()
 				auto &bone3 = bones[vertex.boneIndex3];
 				auto &bone4 = bones[vertex.boneIndex4];
 
-				auto lp1 = vertex.position - bone1.position;
-				auto lp2 = vertex.position - bone2.position;
-				auto lp3 = vertex.position - bone3.position;
-				auto lp4 = vertex.position - bone4.position;
+				auto lp1 = vertex.position;
+				auto lp2 = vertex.position;
+				auto lp3 = vertex.position;
+				auto lp4 = vertex.position;
 
-				auto v1 = bone1.transformedPosition + bone1.animationMatrix.transform(lp1);
-				auto v2 = bone2.transformedPosition + bone2.animationMatrix.transform(lp2);
-				auto v3 = bone3.transformedPosition + bone3.animationMatrix.transform(lp3);
-				auto v4 = bone4.transformedPosition + bone4.animationMatrix.transform(lp4);
+				auto v1 = bone1.animationMatrix.transform(lp1);
+				auto v2 = bone2.animationMatrix.transform(lp2);
+				auto v3 = bone3.animationMatrix.transform(lp3);
+				auto v4 = bone4.animationMatrix.transform(lp4);
 
 
 

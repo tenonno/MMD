@@ -216,21 +216,10 @@ namespace PMX
 
 		Float3 localTranslate;
 		
-		// 頂点など形状変形用のグローバル変形状態
-		Mat4x4 globalMatrix;
-		Quaternion vvv;
-
-		Quaternion globalRotate;
-		Vec3 globalTranslate;
-
-
 		bool transformed = false;
 
 		void reset()
 		{
-			globalTranslate = Vec3::Zero;
-			globalRotate = Quaternion::Identity();
-
 			keyframeTranslate = Vec3::Zero;
 			keyframeRotate = Quaternion::Identity();
 
@@ -245,7 +234,8 @@ namespace PMX
 			_f_rotate = Quaternion::Identity();
 			_ik_r = Quaternion::Identity();
 			localMatrix = Mat4x4::Identity();
-			globalMatrix = Mat4x4::Identity();
+
+			localTranslate = Vec3::Zero;
 
 		}
 
@@ -293,6 +283,11 @@ namespace PMX
 
 
 		int64 付与_parentBoneIndex = -1;
+
+
+
+		Mat4x4 ボーンオフセット行列;
+		Mat4x4 BOfMatrix;
 
 	};
 
