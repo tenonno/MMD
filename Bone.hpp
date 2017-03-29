@@ -286,7 +286,6 @@ namespace PMX
 
 
 
-		Mat4x4 ボーンオフセット行列;
 		Mat4x4 BOfMatrix;
 
 	};

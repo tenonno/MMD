@@ -52,12 +52,12 @@ void Main()
 
 	Window::Resize(1280, 720);
 
-	FilePath path = L"reim/reim.pmx";
+	FilePath path = L"Assets/reim/reim.pmx";
 
 
-	// path = L"C:/Users/tis-teno/Desktop/サーバルちゃんver1.01/サーバルちゃんver1.01/サーバルちゃんver1.01.pmx";
+	path = L"C:/Users/tis-teno/Desktop/サーバルちゃんver1.01/サーバルちゃんver1.01/サーバルちゃんver1.01.pmx";
 
-	path = L"C:/Users/tis-teno/Desktop/サーバルちゃんver1.01/サーバルちゃんver1.01/付与なし.pmx";
+	// path = L"C:/Users/tis-teno/Desktop/サーバルちゃんver1.01/サーバルちゃんver1.01/付与なし.pmx";
 
 
 	String directory = L"";
@@ -72,6 +72,8 @@ void Main()
 
 	Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/サーバルメトロノーム.vmd");
 	// Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/test.vmd");
+
+	// Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/t2.vmd");
 
 
 	PMX::Reader reader(path);
@@ -760,7 +762,6 @@ void Main()
 	};
 
 
-	Graphics3D::SetLight(0, Light::None());
 
 	Graphics::SetBackground(ColorF(0.3));
 
@@ -773,10 +774,11 @@ void Main()
 	double cameraDistance = -30.0;
 
 
-
-	GUI gui(GUIStyle::Default);
+		GUI gui(GUIStyle::Default);
 
 	gui.setPos(150, 50);
+
+
 
 
 
@@ -785,11 +787,14 @@ void Main()
 
 
 
+
+	const auto defaultLight = Graphics3D::GetLight(0);
+	Graphics3D::SetLight(0, Light::None());
+
+
 	while (System::Update())
 	{
 		logPos = 0.0;
-
-
 
 
 
@@ -998,12 +1003,12 @@ void Main()
 
 
 			/*
-											  // 独自の処理
+			// 独自の処理
 			bone.transformParameter.translate =
 
-				bone.transformParameter.translate
-				-
-				parent.transformParameter.translate;
+			bone.transformParameter.translate
+			-
+			parent.transformParameter.translate;
 
 			*/
 
@@ -1041,15 +1046,12 @@ void Main()
 		}
 
 
-		rootBone.transformParameter.rotate = Quaternion::Identity();
 
-		rootBone.transformedPosition = Vec3::Zero;
 
 		rootBone.transformParameter.transformed = true;
 
 
 		rootBone.BOfMatrix = Mat4x4::Identity();
-		rootBone.ボーンオフセット行列 = Mat4x4::Identity();
 
 		rootBone.animationMatrix = Mat4x4::Identity();
 
@@ -1094,7 +1096,7 @@ void Main()
 
 					bone.transformParameter.localMatrix *
 
-					Mat4x4(bone.BOfMatrix).inverse()
+					bone.BOfMatrix.inverse()
 
 					*
 					parent.animationMatrix
@@ -1105,6 +1107,9 @@ void Main()
 				bone.transformedPosition = bone.animationMatrix.transform(bone.position);
 
 
+				bone.transformedConnectBonePosition =
+					bone.animationMatrix.transform(bone.position + bone.connectBonePosition)
+					- bone.transformedPosition;
 
 
 				if (!gui.toggleSwitch(L"ts1").isRight)
@@ -1155,11 +1160,7 @@ void Main()
 				auto v1 = bone1.animationMatrix.transform(lp1);
 				auto v2 = bone2.animationMatrix.transform(lp2);
 
-				Println(vertex.boneWeight1);
-
 				vertex.transformedPosition = Math::Lerp(v2, v1, vertex.boneWeight1);
-
-				// vertex.transformedPosition += RandomVec3(0.1);
 
 
 			}
@@ -1213,11 +1214,11 @@ void Main()
 				auto s4 = bones[vertex.boneIndex4].transformedPosition - bones[vertex.boneIndex4].position;
 
 				auto p = (
-					s1 * vertex.boneWeight1 +
-					s2 * vertex.boneWeight2 +
-					s3 * vertex.boneWeight3 +
-					s4 * vertex.boneWeight4
-					);
+				s1 * vertex.boneWeight1 +
+				s2 * vertex.boneWeight2 +
+				s3 * vertex.boneWeight3 +
+				s4 * vertex.boneWeight4
+				);
 
 				vertex.transformedPosition += p;
 				*/
@@ -1254,7 +1255,12 @@ void Main()
 			mesh.mesh.fillVertices(mesh.vertices);
 
 
+			//		Graphics3D::BeginPS();
+
+
 			mesh.mesh.draw(texture);
+
+
 			mesh.mesh.drawShadow();
 
 		}
@@ -1330,6 +1336,8 @@ void Main()
 
 
 		Plane(100).draw(ColorF(0.2));
+
+
 
 
 

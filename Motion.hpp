@@ -24,7 +24,11 @@ namespace VMD
 
 		Quaternion rotation;
 
-		char bezier[64]; // 補間パラメータ
+		CubicBezier b_x;
+		CubicBezier b_y;
+		CubicBezier b_z;
+		CubicBezier b_r;
+
 	};
 
 
@@ -108,18 +112,125 @@ public:
 				char bezier[64]; // 補間パラメータ
 			*/
 
-			auto frameNum = reader.readUInt32();
+			auto frameNum = reader.value<uint32>();
 
 
 
 			boneFrame.position = reader.value<Vec3>();
 			boneFrame.rotation = reader.value<Quaternion>();
 
-			reader.skip(64);
+
+
+			char
+				// X 軸の補間パラメータ
+				X_ax, X_ay, X_bx, X_by,
+				// Y 軸の補間パラメータ
+				Y_ax, Y_ay, Y_bx, Y_by,
+				// Z 軸の補間パラメータ
+				Z_ax, Z_ay, Z_bx, Z_by,
+				// 回転の補間パラメータ
+				R_ax, R_ay, R_bx, R_by;
+
+
+			X_ax = reader.value<char>();
+			Y_ax = reader.value<char>();
+			Z_ax = reader.value<char>();
+			R_ax = reader.value<char>();
+			X_ay = reader.value<char>();
+			Y_ay = reader.value<char>();
+			Z_ay = reader.value<char>();
+			R_ay = reader.value<char>();
+			X_bx = reader.value<char>();
+			Y_bx = reader.value<char>();
+			Z_bx = reader.value<char>();
+			R_bx = reader.value<char>();
+			X_by = reader.value<char>();
+			Y_by = reader.value<char>();
+			Z_by = reader.value<char>();
+			R_by = reader.value<char>();
+
+			Y_ax = reader.value<char>();
+			Z_ax = reader.value<char>();
+			R_ax = reader.value<char>();
+			X_ay = reader.value<char>();
+			Y_ay = reader.value<char>();
+			Z_ay = reader.value<char>();
+			R_ay = reader.value<char>();
+			X_bx = reader.value<char>();
+			Y_bx = reader.value<char>();
+			Z_bx = reader.value<char>();
+			R_bx = reader.value<char>();
+			X_by = reader.value<char>();
+			Y_by = reader.value<char>();
+			Z_by = reader.value<char>();
+			R_by = reader.value<char>();
+			// 01 = reader.value<char>();
+			reader.skip(1);
+			Z_ax = reader.value<char>();
+			R_ax = reader.value<char>();
+			X_ay = reader.value<char>();
+			Y_ay = reader.value<char>();
+			Z_ay = reader.value<char>();
+			R_ay = reader.value<char>();
+			X_bx = reader.value<char>();
+			Y_bx = reader.value<char>();
+			Z_bx = reader.value<char>();
+			R_bx = reader.value<char>();
+			X_by = reader.value<char>();
+			Y_by = reader.value<char>();
+			Z_by = reader.value<char>();
+			R_by = reader.value<char>();
+
+			// 01 = reader.value<char>();
+			reader.skip(1);
+			// 00 = reader.value<char>();
+			reader.skip(1);
+
+			R_ax = reader.value<char>();
+			X_ay = reader.value<char>();
+			Y_ay = reader.value<char>();
+			Z_ay = reader.value<char>();
+			R_ay = reader.value<char>();
+			X_bx = reader.value<char>();
+			Y_bx = reader.value<char>();
+			Z_bx = reader.value<char>();
+			R_bx = reader.value<char>();
+			X_by = reader.value<char>();
+			Y_by = reader.value<char>();
+			Z_by = reader.value<char>();
+			R_by = reader.value<char>();
+			// 01 = reader.value<char>();
+			reader.skip(1);
+			// 00 = reader.value<char>();
+			reader.skip(1);
+			// 00 = reader.value<char>();
+			reader.skip(1);
+
+
+			boneFrame.b_x.p0 = Vec2(0, 0);
+			boneFrame.b_y.p0 = Vec2(0, 0);
+			boneFrame.b_z.p0 = Vec2(0, 0);
+			boneFrame.b_r.p0 = Vec2(0, 0);
+
+			boneFrame.b_x.p3 = Vec2(127, 127);
+			boneFrame.b_y.p3 = Vec2(127, 127);
+			boneFrame.b_z.p3 = Vec2(127, 127);
+			boneFrame.b_r.p3 = Vec2(127, 127);
+
+
+
+			boneFrame.b_x.p1 = Vec2(X_ax, X_ay);
+			boneFrame.b_y.p1 = Vec2(Y_ax, Y_ay);
+			boneFrame.b_z.p1 = Vec2(Z_ax, Z_ay);
+			boneFrame.b_r.p1 = Vec2(R_ax, R_ay);
+
+			boneFrame.b_x.p2 = Vec2(X_bx, X_by);
+			boneFrame.b_y.p2 = Vec2(Y_bx, Y_by);
+			boneFrame.b_z.p2 = Vec2(Z_bx, Z_by);
+			boneFrame.b_r.p2 = Vec2(R_bx, R_by);
 
 
 			boneFrame.frame = frameNum;
-
 
 
 			frames[boneFrame.name].emplace_back(boneFrame);
@@ -133,7 +244,7 @@ public:
 	}
 
 
-	
+
 	VMD::Bone get(const String &name, const double frame)
 	{
 
@@ -190,10 +301,22 @@ public:
 		const double pos = (frame - begin.frame) / distance;
 
 
+
+
+		const double pos_x = end.b_x.getPos(pos).y / 127.0;
+		const double pos_y = end.b_y.getPos(pos).y / 127.0;
+		const double pos_z = end.b_z.getPos(pos).y / 127.0;
+		const double pos_r = end.b_r.getPos(pos).y / 127.0;
+
+
+
 		VMD::Bone bone;
 
-		bone.position = Math::Lerp(begin.position, end.position, pos);
-		bone.rotation = Math::Slerp(begin.rotation, end.rotation, pos);
+		bone.position.x = Math::Lerp(begin.position.x, end.position.x, pos_x);
+		bone.position.y = Math::Lerp(begin.position.y, end.position.y, pos_y);
+		bone.position.z = Math::Lerp(begin.position.z, end.position.z, pos_z);
+
+		bone.rotation = Math::Slerp(begin.rotation, end.rotation, pos_r);
 
 		return bone;
 
