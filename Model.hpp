@@ -113,7 +113,6 @@ namespace PMX
 
 			Println(L"頂点数", vertexNum);
 
-			Array<Vertex> vertexList;
 
 			const size_t optionalUVSize = header.datas[1];
 
@@ -568,7 +567,6 @@ namespace PMX
 			auto faceIndex = 0;
 
 
-			Array<PMXMesh> meshList;
 
 			// マテリアルからメッシュを作る
 			for (auto &material : materialList)
@@ -612,7 +610,6 @@ namespace PMX
 
 
 				auto mesh = DynamicMesh(MeshData(vertices, indices));
-
 				pmxMesh.mesh = mesh;
 				pmxMesh.material = material;
 
@@ -632,17 +629,15 @@ namespace PMX
 
 
 			this->materials = materialList;
-			this->meshList = meshList;
-			this->vertexList = vertexList;
 		}
 
 
+		Array<PMXMesh> meshList;
 
 
 		Array<Material> materials;
 		Array<Bone> bones;
 
-		Array<PMXMesh> meshList;
 		Array<Texture> textures;
 		Array<Vertex> vertexList;
 
@@ -679,7 +674,98 @@ namespace PMX
 
 
 
+		void transform() 
+		{
 
+
+			// 頂点をボーンに合わせて変形する
+			for (auto &vertex : vertexList)
+			{
+
+
+				if (vertex.weightType == WeightType::BDEF1)
+				{
+
+					auto &bone1 = bones[vertex.boneIndex1];
+
+
+					auto lp = vertex.position;
+
+					vertex.transformedPosition = bone1.animationMatrix.transform(lp);
+
+				}
+
+				else if (vertex.weightType == WeightType::BDEF2)
+				{
+
+					auto &bone1 = bones[vertex.boneIndex1];
+					auto &bone2 = bones[vertex.boneIndex2];
+
+					auto lp1 = vertex.position;
+					auto lp2 = vertex.position;
+
+
+					auto v1 = bone1.animationMatrix.transform(lp1);
+					auto v2 = bone2.animationMatrix.transform(lp2);
+
+					vertex.transformedPosition = Math::Lerp(v2, v1, vertex.boneWeight1);
+
+
+
+				}
+				else if (vertex.weightType == WeightType::BDEF4)
+				{
+
+
+					auto &bone1 = bones[vertex.boneIndex1];
+					auto &bone2 = bones[vertex.boneIndex2];
+					auto &bone3 = bones[vertex.boneIndex3];
+					auto &bone4 = bones[vertex.boneIndex4];
+
+					auto v1 = bone1.animationMatrix.transform(vertex.position);
+					auto v2 = bone2.animationMatrix.transform(vertex.position);
+					auto v3 = bone3.animationMatrix.transform(vertex.position);
+					auto v4 = bone4.animationMatrix.transform(vertex.position);
+
+
+					// ウェイトの合計
+					auto aw = (vertex.boneWeight1 + vertex.boneWeight2 + vertex.boneWeight3 + vertex.boneWeight4);
+
+
+
+					// 正規化する（仮）
+					auto s = 1.0;// (aw / 1.0);
+					double w1 = vertex.boneWeight1 * s;
+					double w2 = vertex.boneWeight2 * s;
+					double w3 = vertex.boneWeight3 * s;
+					double w4 = vertex.boneWeight4 * s;
+
+
+					vertex.transformedPosition = (
+						v1 * w1 +
+						v2 * w2 +
+						v3 * w3 +
+						v4 * w4
+						);
+
+
+				}
+
+				else
+				{
+					$((int)vertex.weightType);
+				}
+
+
+			}
+
+
+
+
+
+
+
+		}
 
 
 

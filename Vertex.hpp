@@ -3,6 +3,8 @@
 enum class WeightType : uint8
 {
 
+	Default = 7,
+
 	BDEF1 = 0,
 	BDEF2 = 1,
 	BDEF4 = 2,
@@ -35,6 +37,29 @@ struct Vertex
 	float edgeScale;
 
 	std::array<Float4, 4> optionalUV;
+
+
+	Vertex()
+	{
+
+		position = Vec3::Zero;
+		normal = Vec3::Zero;
+		texcoord = Vec2::Zero;
+		transformedPosition = Vec3::Zero;
+		weightType = WeightType::Default;
+
+		boneIndex1 = -1;
+		boneIndex2 = -1;
+		boneIndex3 = -1;
+		boneIndex4 = -1;
+
+		boneWeight1 = 0;
+		boneWeight2 = 0;
+		boneWeight3 = 0;
+		boneWeight4 = 0;
+	}
+
+
 
 	MeshVertex toMeshVertex() {
 

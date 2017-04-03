@@ -31,7 +31,7 @@ void Main()
 	// Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/IK.vmd");
 	// Motion motion(L"C:/Users/tis-teno/Desktop/Rick式サーバルメトロノーム/Rick式サーバルメトロノーム/IK test.vmd");
 
-	
+
 
 
 	Font font1(14, L"Consolas");
@@ -87,7 +87,6 @@ void Main()
 	auto &meshList = model.meshList;
 	auto &vertexList = model.vertexList;
 
-	auto &textures = model.textures;
 
 	// 物理演算前変形ボーン
 	Array<Bone *> A$Physics_bones;
@@ -150,7 +149,7 @@ void Main()
 
 	gui.addln(L"slider", GUISlider::Create(0, 5, 0, 100));
 
-	
+
 
 	while (System::Update())
 	{
@@ -282,7 +281,7 @@ void Main()
 					{
 						MessageBox::Show(L"ローカル付与");
 
-						rotate *= MatrixToQuaternion(付与_parent->transformParameter.localMatrix);
+						// rotate *= MatrixToQuaternion(付与_parent->transformParameter.localMatrix);
 
 						// 1.1 ローカル付与の場合 : *付与親のローカル移動量 ※ローカル付与優先
 
@@ -389,6 +388,8 @@ void Main()
 		}
 
 
+
+
 		for (auto &bone : bones)
 		{
 
@@ -401,8 +402,6 @@ void Main()
 
 
 		}
-
-
 
 
 		rootBone.transformParameter.transformed = true;
@@ -522,7 +521,7 @@ void Main()
 			std::copy(bone.ik.limits.begin(), bone.ik.limits.end(), std::back_inserter(limits));
 
 
-			for (auto _ : step( bone.ik.iteration))
+			for (auto _ : step(bone.ik.iteration))
 			{
 
 				auto i = 0;
@@ -536,23 +535,32 @@ void Main()
 
 
 					//  リンクボーンからターゲットボーンへの向き
-					auto tDir = targetBone.transformedPosition - linkBone.transformedPosition;
+					auto tDir = targetBone.getGPos(bones) - linkBone.getGPos(bones);
 
-					/*
-					font1.drawAt(Format(i), Graphics3D::ToScreenPos(
-						linkBone.transformedPosition
-					).xy(), Palette::Red);
-					*/
+
 
 					// リンクボーンから IK ボーン への向き
-					auto lDir = ikBone.transformedPosition - linkBone.transformedPosition;
-
-
+					auto lDir = ikBone.getGPos(bones) - linkBone.getGPos(bones);
 
 
 					// (1)を(2)の位置に向ける回転行列の計算
 					float rotationDotProduct = Vec3(tDir.normalized()).dot(lDir.normalized());
-					float rotationAngle = Acos(rotationDotProduct);
+
+
+					if (rotationDotProduct < 0.000001) continue;
+
+					double rotationAngle = Acos(rotationDotProduct);
+
+					/*
+					if (Abs(rotationAngle) > bone.ik.limitAngle)
+					{
+						rotationAngle = Sign(rotationAngle) * bone.ik.limitAngle;
+					}
+					*/
+
+					// 制限角度を超えている
+					if (rotationAngle > bone.ik.limitAngle) rotationAngle = bone.ik.limitAngle;
+
 
 					// 外積が回転軸
 					auto rotationAxis = Vec3(tDir).cross(lDir);
@@ -560,125 +568,17 @@ void Main()
 					// 回転軸と回転角度からクォータニオンを生成
 					auto q2 = Quaternion(rotationAxis, rotationAngle);
 
-
-					Println(L"Rotation Angle: ", rotationAngle);
-					Println(L"LIM: ", bone.ik.limitAngle);
-
-					/*
-					auto q = Quaternion::RotationArc(tDir.normalized(), lDir.normalized(), RandomVec3());
-					q = q2;
-					*/
-
-					auto q = q2;
-
-
-					// 制限角度を超えている
-					if (Abs(rotationAngle) > bone.ik.limitAngle)
-					{
-						// $(L"ループの制限角度を実装していません");
-
-						rotationAngle = Sign(rotationAngle) * bone.ik.limitAngle;
-
-					}
-
-
-					if (gui.toggleSwitch(L"angleLimit").isRight)
-					{
-
-
-					}
-
-
-
-
-					auto min = Vec3(-180_deg, -180_deg, -180_deg);
-					auto max = Vec3(+180_deg, +180_deg, +180_deg);
-
-					bool log = false;
-
-
-
 					if (bone.ik.limits[i - 1])
-					{
-					//	min = Vec3(-180_deg, 0, 0);
-					//	max = Vec3(0.00, 0, 0);
-						log = true;
-					}
-
-
-
-					// リンクボーンより先にあるボーンを変形する
-					for (auto j : step(i))
-					{
-
-						Bone &linkPBone = *boneList[j];
-
-						// ボーン n の座標を リンクボーンのローカルに戻す
-						auto localPos = boneList[j]->transformedPosition - linkBone.transformedPosition;
-						 
-						auto mat = q.toMatrix();
-
-						boneList[j]->animationMatrix = Mat4x4::Translate(RandomVec3());
-
-
-
-
-						// ボーンを回すクォータニオン
-						auto rq = Quaternion::RotationArc(tDir.normalized(), lDir.normalized());
-
-			
-						/*
-
-
-						if (bone.ik.limits[i - 1])
 						// if (limits[j])
-						{
+					{
 
-							rq = QtoEtoQ2(rq);
-
-						}
-
-
-
-
-
-						auto rqMat = rq.toMatrix();
-
-
-						// TODO: クォータニオンをオイラー角にして、元に戻すだけの処理をテスト
-						// QtoEtoQ(rq);
-
-
-
-						// if (linkPBone.ik.limits
-						*/
-
-
-						// リンクボーン 
-						// auto l_axis = (linkBone.transeformedPosition - bones[linkBone.parentBoneIndex].transeformedPosition).normalize();
-						auto l_axis = (linkBone.transformedPosition - bones[linkBone.parentBoneIndex].transformedPosition).normalize();
-
-
-						localPos = D3DXVec3RotateReg(rotationAxis, rotationAngle, localPos,
-							min,
-							max,
-							l_axis
-						);
-						/*
-
-
-						localPos = rqMat.transform(localPos);
-
-						*/
-						// Println(localPos);
-
-						// 変形
-						// localPos = mat.transform(localPos);
-
-						// ボーン n の座標をグローバルに戻す
-						boneList[j]->transformedPosition = linkBone.transformedPosition + localPos;
+						q2 = QtoEtoQ(q2, gui.slider(L"slider").valueInt);
 
 					}
+
+					linkBone.transformParameter.localMatrix *= q2.toMatrix();// Mat4x4::Rotate(0.005, 0, 0);
+
+
 
 
 
@@ -688,6 +588,58 @@ void Main()
 
 
 			}
+
+		}
+
+		for (auto &bone : bones)
+		{
+			if (bone.name == L"左ひざD") bone.transformParameter.localMatrix = bones[154].transformParameter.localMatrix;// = Mat4x4::Translate(RandomVec3());
+			if (bone.name == L"左足D") bone.transformParameter.localMatrix = bones[153].transformParameter.localMatrix;// = Mat4x4::Translate(RandomVec3());
+			if (bone.name == L"左足首D") bone.transformParameter.localMatrix = bones[156].transformParameter.localMatrix;// = Mat4x4::Translate(RandomVec3());
+		}
+
+
+		rootBone.transformParameter.___a___ = true;
+
+		while (true)
+		{
+			bool end = true;
+
+			for (auto &bone : bones)
+			{
+				Bone &parent = bone.parentBoneIndex == -1 ? rootBone : bones[bone.parentBoneIndex];
+
+				if (!parent.transformParameter.___a___) {
+					end = false;
+					continue;
+				}
+
+				bone.animationMatrix = Mat4x4(
+
+
+					bone.BOfMatrix *
+
+					bone.transformParameter.localMatrix *
+
+					bone.BOfMatrix.inverse()
+
+					*
+					parent.animationMatrix
+
+
+				);
+
+				bone.transformParameter.___a___ = true;
+
+			}
+
+			if (end) break;
+		}
+
+
+		for (auto &bone : bones)
+		{
+			bone.transformedPosition = bone.animationMatrix.transform(bone.position);
 
 		}
 
@@ -771,13 +723,8 @@ void Main()
 
 			else
 			{
-				MessageBox::Show(Format((int)vertex.weightType));
+				$((int)vertex.weightType);
 			}
-
-
-
-			//
-
 
 
 		}

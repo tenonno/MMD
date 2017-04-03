@@ -209,8 +209,9 @@ inline Quaternion QtoEtoQ2(const Quaternion &q)
 
 	Quaternion r;
 
-	fY = 0.0;
-	fZ = 0.0;
+
+	Println(fX, fY, fZ);
+
 
 	r = toQuaternion(fY, fX, fZ);
 
@@ -233,7 +234,7 @@ inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
 	// X軸回り
 	float fXLimit = 80.0f / 180.0f * Pi;
 	float fSX = -RotMat.r[2].m128_f32[1];    // sin(θx)
-	float fX = (float)asin(fSX);   // X軸回り決定
+	double fX = Asin(fSX);   // X軸回り決定
 	float fCX = (float)cos(fX);
 
 	// ジンバルロック回避
@@ -245,12 +246,12 @@ inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
 	// Y軸回り
 	float fSY = RotMat.r[2].m128_f32[0] / fCX;
 	float fCY = RotMat.r[2].m128_f32[2] / fCX;
-	float fY = (float)Atan2(fSY, fCY);   // Y軸回り決定
+	double fY = Atan2(fSY, fCY);   // Y軸回り決定
 
 										 // Z軸回り
 	float fSZ = RotMat.r[0].m128_f32[1] / fCX;
 	float fCZ = RotMat.r[1].m128_f32[1] / fCX;
-	float fZ = (float)Atan2(fSZ, fCZ);
+	double fZ = Atan2(fSZ, fCZ);
 
 
 
@@ -289,7 +290,12 @@ inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
 	fZ = rz;
 	*/
 
-	fX = Min((double)fX, 0.0);
+	// Println(L"X: ", Floor(Degrees(fX)), L", Y: ", Floor(Degrees(fY)), L", Z: ", Floor(Degrees(fZ)));
+
+
+	fX = Clamp(fX, -180_deg, 0.0);
+	fY = Clamp(fY, .0, 0.0);
+	fZ = Clamp(fZ, .0, 0.0);
 
 	Quaternion r;
 
@@ -316,8 +322,10 @@ inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
 	}
 
 
+	Println(guiValueInt);
 
-	return r;// XMQuaternionRotationRollPitchYaw(fX, fZ, fY);
+
+	return XMQuaternionRotationRollPitchYaw(fX, fY, fZ);
 
 }
 
