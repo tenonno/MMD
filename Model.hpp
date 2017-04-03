@@ -1,6 +1,26 @@
 #pragma once
 
 
+#include <Siv3D.hpp>
+
+
+#include "Utils.hpp"
+
+
+
+# include "Vertex.hpp"
+
+
+#include "Material.hpp"
+
+
+#include "Reader.hpp"
+
+#include "Bone.hpp"
+
+
+
+
 struct PMXMesh
 {
 
@@ -449,31 +469,42 @@ namespace PMX
 				if (flag.IK)
 				{
 
+
 					// n: ボーンIndexサイズ | IKターゲットボーンのボーンIndex
-					auto ikTargetBoneIndex = reader.fromSize(boneIndexSize);
+					bone.ik.targetIndex = reader.value(boneIndexSize);
 
 					// 4 : int | IKループ回数(PMD及びMMD環境では255回が最大になるようです)
-					auto ikLoopNum = reader.readInt();
+					bone.ik.iteration = reader.value<uint32>();
 
 					// 4 : float | IKループ計算時の1回あたりの制限角度->ラジアン角 | PMDのIK値とは4倍異なるので注意
-					auto ikLoopLimitAngle = reader.readFloat();
+					bone.ik.limitAngle = reader.value<double>();
 
 					// 4  : int  	| IKリンク数 : 後続の要素数
 					auto ikLinkNum = reader.readInt();
 
 					// <IKリンク>
-					for (auto ikLinkIndex = 0; ikLinkIndex < ikLinkNum; ++ikLinkIndex)
+					for (auto ikLinkIndex : step(ikLinkNum ))
 					{
 
 						// n: ボーンIndexサイズ | リンクボーンのボーンIndex
-						auto ikLinkBoneIndex = reader.fromSize(boneIndexSize);
+						auto ikLinkBoneIndex = reader.value(boneIndexSize);
+
+
+						bone.ik.links.emplace_back(ikLinkBoneIndex);
 
 						// 1 : byte | 角度制限 0 : OFF 1 : ON
 						auto limitAngle = reader.value<bool>();
 
+						bone.ik.limits.emplace_back(limitAngle ? 1 : 0);
+
 						// 角度制限 : 1の場合
 						if (limitAngle)
 						{
+
+
+						
+							// $(L"角度制限");
+
 							// 12 : float3 | 下限(x, y, z)->ラジアン角
 							auto min = reader.readVec3();
 
@@ -500,10 +531,6 @@ namespace PMX
 			// ボーンの BOf 行列を作る
 			for (auto &bone : bones)
 			{
-
-
-
-
 
 
 
@@ -620,12 +647,12 @@ namespace PMX
 		Array<Vertex> vertexList;
 
 		// ボーンの接続先がないなら true
-		bool $boneNoneConnect(const Bone &bone)
+		bool $boneNoneConnect(const Bone &bone) const
 		{
 			return bone.flag.connectType == BoneConnectType::Index && bone.connectBoneIndex == -1;
 		};
 
-		Vec3 $getBoneConnectPosition(const Bone &bone) 
+		Vec3 $getBoneConnectPosition(const Bone &bone)  const
 		{
 
 
@@ -640,6 +667,29 @@ namespace PMX
 			}
 
 		};
+
+
+
+
+
+		void updateBonePhase1() const
+		{
+
+		}
+
+
+
+
+
+
+
+		void draw() const;
+
+		void drawShadow() const;
+
+
+		void drawBone() const;
+
 
 
 	};

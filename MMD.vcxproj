@@ -22,7 +22,7 @@
     <ProjectGuid>{9F5A5474-73E0-4FF4-B48D-EB59009B9D4A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MMD</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -280,6 +280,7 @@
   <ItemGroup>
     <ClInclude Include="Bone.hpp" />
     <ClInclude Include="Material.hpp" />
+    <ClInclude Include="MMD.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Motion.hpp" />
     <ClInclude Include="Reader.hpp" />

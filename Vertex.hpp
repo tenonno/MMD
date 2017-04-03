@@ -1,6 +1,6 @@
 #pragma once
 
-enum class WeightType
+enum class WeightType : uint8
 {
 
 	BDEF1 = 0,

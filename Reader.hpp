@@ -1,6 +1,5 @@
 #pragma once
 
-uint16_t GetBits(uint16_t x, int p, int n) { return ((x >> p)&~(~0x0000 << n)); }
 
 namespace PMX
 {

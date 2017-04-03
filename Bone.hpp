@@ -27,7 +27,7 @@
 // OpenGL形式（列方向が軸の向き）の場合は
 // 転置した値を入れて下さい。
 
-bool transformRotMatToQuaternion(
+inline bool transformRotMatToQuaternion(
 	float &qx, float &qy, float &qz, float &qw,
 	float m11, float m12, float m13,
 	float m21, float m22, float m23,
@@ -94,7 +94,7 @@ bool transformRotMatToQuaternion(
 // OpenGL形式（列方向が軸の向き）の場合は
 // 転置した値を入れて下さい。
 
-bool transformRotMatToQuaternion(
+inline bool transformRotMatToQuaternion(
 	float q[4],
 	const float m1[3],
 	const float m2[3],
@@ -109,7 +109,7 @@ bool transformRotMatToQuaternion(
 }
 
 
-Quaternion MatrixToQuaternion(const Mat4x4 &matrix)
+inline Quaternion MatrixToQuaternion(const Mat4x4 &matrix)
 {
 	float q[4];
 
@@ -242,11 +242,27 @@ namespace PMX
 	};
 
 
+	struct IK
+	{
+
+		int64 targetIndex;
+
+		Array<int64> links;
+		// 仮
+		Array<int8> limits;
+
+		uint32 iteration;
+
+		double limitAngle;
+
+	};
+
 	struct Bone
 	{
 
 		Mat4x4 animationMatrix;
 
+		IK ik;
 
 
 		Vec3 transformedPosition;

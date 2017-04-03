@@ -428,5 +428,8 @@
     <ClInclude Include="Utils.hpp">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="MMD.hpp">
+      <Filter>ソース ファイル\MMD</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
