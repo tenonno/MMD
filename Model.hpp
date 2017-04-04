@@ -205,7 +205,7 @@ namespace PMX
 
 				vertex.edgeScale = reader.value<double>();
 
-				vertexList.emplace_back(vertex);
+				vertices.emplace_back(vertex);
 
 			}
 
@@ -571,10 +571,10 @@ namespace PMX
 			// マテリアルからメッシュを作る
 			for (auto &material : materialList)
 			{
-				Array<MeshVertex> vertices;
+				Array<MeshVertex> meshVertices;
 				Array<uint32> indices;
 
-				vertices.reserve(material.faceVertexCount);
+				meshVertices.reserve(material.faceVertexCount);
 				indices.reserve(material.faceVertexCount);
 
 				PMXMesh pmxMesh;
@@ -589,9 +589,9 @@ namespace PMX
 
 					// TODO: 同じ頂点が既に追加されていたらそれを参照するように
 
-					vertices.emplace_back(vertexList[face.v1].toMeshVertex());
-					vertices.emplace_back(vertexList[face.v2].toMeshVertex());
-					vertices.emplace_back(vertexList[face.v3].toMeshVertex());
+					meshVertices.emplace_back(vertices[face.v1].toMeshVertex());
+					meshVertices.emplace_back(vertices[face.v2].toMeshVertex());
+					meshVertices.emplace_back(vertices[face.v3].toMeshVertex());
 
 
 					pmxMesh.v_index.emplace_back(face.v1);
@@ -609,11 +609,11 @@ namespace PMX
 
 
 
-				auto mesh = DynamicMesh(MeshData(vertices, indices));
+				auto mesh = DynamicMesh(MeshData(meshVertices, indices));
 				pmxMesh.mesh = mesh;
 				pmxMesh.material = material;
 
-				pmxMesh.vertices = std::move(vertices);
+				pmxMesh.vertices = std::move(meshVertices);
 
 				meshList.emplace_back(pmxMesh);
 
@@ -639,7 +639,7 @@ namespace PMX
 		Array<Bone> bones;
 
 		Array<Texture> textures;
-		Array<Vertex> vertexList;
+		Array<Vertex> vertices;
 
 		// ボーンの接続先がないなら true
 		bool $boneNoneConnect(const Bone &bone) const
@@ -665,6 +665,30 @@ namespace PMX
 
 
 
+		void forEach_bones(const std::function<bool(Bone &)> &_if, const std::function<void(Bone &)> &callback)
+		{
+
+			while (true)
+			{
+				bool end = true;
+
+				for (auto &bone : bones)
+				{
+
+					if (!_if(bone))
+					{
+						end = false;
+						continue;
+					}
+
+					callback(bone);
+
+				}
+
+				if (end) break;
+			}
+
+		}
 
 
 		void updateBonePhase1() const
@@ -679,7 +703,7 @@ namespace PMX
 
 
 			// 頂点をボーンに合わせて変形する
-			for (auto &vertex : vertexList)
+			for (auto &vertex : vertices)
 			{
 
 

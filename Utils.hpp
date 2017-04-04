@@ -125,7 +125,7 @@ inline Quaternion toQuaternion(double pitch, double roll, double yaw)
 inline bool closeEnough(const float& a, const float& b, const float& epsilon = std::numeric_limits<float>::epsilon()) {
 	return (epsilon > std::abs(a - b));
 }
-inline float3 eulerAngles(Mat4x4 m ) {
+inline float3 eulerAngles(Mat4x4 m) {
 	
 
 	float3x3 R;
@@ -220,7 +220,7 @@ inline Quaternion QtoEtoQ2(const Quaternion &q)
 }
 
 
-inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
+inline Quaternion QtoEtoQ(const Quaternion &q, const Vec3 &min, const Vec3 &max)
 {
 
 	using namespace DirectX;
@@ -255,11 +255,12 @@ inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
 
 
 
-
-
-
-	double rx, ry, rz;
-
+	/*
+	Vec3 euler = q_eulerAngles(q.normalized());
+	fX = euler.x;
+	fY = euler.y;
+	fZ = euler.z;
+	*/
 
 	//mtx = XMMatrixRotationRollPitchYaw(rx,ry,rz);
 	//mtxÇ©ÇÁÉIÉCÉâÅ[äpÇãÅÇﬂÇÈ
@@ -293,9 +294,11 @@ inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
 	// Println(L"X: ", Floor(Degrees(fX)), L", Y: ", Floor(Degrees(fY)), L", Z: ", Floor(Degrees(fZ)));
 
 
-	fX = Clamp(fX, -180_deg, 0.0);
-	fY = Clamp(fY, .0, 0.0);
-	fZ = Clamp(fZ, .0, 0.0);
+	fX = Clamp(fX, min.x, max.x);
+	fY = Clamp(fY, min.y, max.y);
+	fZ = Clamp(fZ, min.z, max.z);
+
+	/*
 
 	Quaternion r;
 
@@ -323,6 +326,8 @@ inline Quaternion QtoEtoQ(const Quaternion &q, int guiValueInt)
 
 
 	Println(guiValueInt);
+
+	*/
 
 
 	return XMQuaternionRotationRollPitchYaw(fX, fY, fZ);

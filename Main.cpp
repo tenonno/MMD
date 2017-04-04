@@ -59,6 +59,9 @@ void Main()
 	double cameraDistance = -30.0;
 
 
+
+
+
 	GUI gui(GUIStyle::Default);
 
 	gui.setPos(150, 50);
@@ -85,7 +88,7 @@ void Main()
 	auto &bones = model.bones;
 	auto &materials = model.materials;
 	auto &meshList = model.meshList;
-	auto &vertexList = model.vertexList;
+	auto &vertexList = model.vertices;
 
 
 	// 物理演算前変形ボーン
@@ -193,9 +196,8 @@ void Main()
 
 		// 1. ユーザー操作の回転／移動量をすべてのボーンに設定
 		// 2. ボーンモーフによる回転／移動量を対応するボーンに設定
-		for (Bone *p_bone : A$Physics_bones)
+		for (auto &bone : bones)//Bone *p_bone : A$Physics_bones)
 		{
-			Bone &bone = *p_bone;
 
 			auto name = bone.name;
 
@@ -221,8 +223,6 @@ void Main()
 		}
 
 		PMX::Bone rootBone;
-
-
 		rootBone.transformParameter.translate = Vec3::Zero;
 
 
@@ -334,12 +334,9 @@ void Main()
 				// 1.2 付与率が1以外の場合 : 移動量を付与率で補正(付与率乗算でOK)
 
 				rotate *= bone.transformParameter.keyframeRotate;
-
 				rotate = Math::Slerp(Quaternion::Identity(), rotate, bone.付与率);
 
 				translate *= bone.付与率;
-
-
 
 
 				// 1.4 付与親のIKリンク～回転モーフ(付与率で補正済み)～回転モーフ を当該ボーンの付与回転量として保存(別の付与ボーンの付与親になった場合の多重付与変形用)
@@ -357,8 +354,6 @@ void Main()
 
 
 				translate += bone.transformParameter.keyframeTranslate;
-
-
 
 
 				// 2. 当該ボーンの回転量追加 : * 回転 * 回転モーフ
@@ -394,12 +389,8 @@ void Main()
 		{
 
 			bone.transformParameter.localMatrix =
-
 				bone.transformParameter.rotate.toMatrix()
-
 				* Mat4x4::Translate(bone.transformParameter.translate);
-
-
 
 		}
 
@@ -410,6 +401,12 @@ void Main()
 		rootBone.BOfMatrix = Mat4x4::Identity();
 
 		rootBone.animationMatrix = Mat4x4::Identity();
+
+
+
+
+
+
 
 		// 親 -> 子の順で変形するようにループ
 		while (true)
@@ -507,19 +504,7 @@ void Main()
 			Bone &targetBone = bones[bone.ik.targetIndex];
 
 
-			// ターゲット, リンク 1, リンク 2, ...
-			Array<Bone *> boneList;
-			Array<int8> limits;
-			boneList.emplace_back(&targetBone);
-			limits.emplace_back(0);
-			for (auto link : bone.ik.links)
-			{
-
-				boneList.emplace_back(&bones[link]);
-			}
-
-			std::copy(bone.ik.limits.begin(), bone.ik.limits.end(), std::back_inserter(limits));
-
+	
 
 			for (auto _ : step(bone.ik.iteration))
 			{
@@ -568,18 +553,42 @@ void Main()
 					// 回転軸と回転角度からクォータニオンを生成
 					auto q2 = Quaternion(rotationAxis, rotationAngle);
 
+
+
+					auto min = Vec3(-180_deg, -180_deg, -180_deg);
+					auto max = Vec3(+180_deg, +180_deg, +180_deg);
+
+					if (bone.ik.limits[i - 1])
+					{
+						min = Vec3(-180_deg, 0, 0);
+						max = Vec3(0, 0, 0);
+					}
+
+
+
+
+
+
+					/*
+
 					if (bone.ik.limits[i - 1])
 						// if (limits[j])
 					{
 
-						q2 = QtoEtoQ(q2, gui.slider(L"slider").valueInt);
+						q2 = QtoEtoQ(q2, min, max);
 
 					}
+					*/
+
+
+					q2 = QtoEtoQ(q2, min, max);
+
 
 					linkBone.transformParameter.localMatrix *= q2.toMatrix();// Mat4x4::Rotate(0.005, 0, 0);
 
+					linkBone.transformParameter.rotate *= q2;
 
-
+					linkBone.transformParameter._ik_r *= q2;
 
 
 				}
@@ -591,12 +600,164 @@ void Main()
 
 		}
 
-		for (auto &bone : bones)
+
+
+		// IK 計算後付与率を再計算
 		{
-			if (bone.name == L"左ひざD") bone.transformParameter.localMatrix = bones[154].transformParameter.localMatrix;// = Mat4x4::Translate(RandomVec3());
-			if (bone.name == L"左足D") bone.transformParameter.localMatrix = bones[153].transformParameter.localMatrix;// = Mat4x4::Translate(RandomVec3());
-			if (bone.name == L"左足首D") bone.transformParameter.localMatrix = bones[156].transformParameter.localMatrix;// = Mat4x4::Translate(RandomVec3());
+
+			while (true)
+			{
+				bool end = true;
+
+				// ボーンのローカル移動量、回転量を計算する
+				for (auto &p_bone : A$Physics_bones)
+				{
+
+					Bone &bone = *p_bone;
+
+
+
+					// 親ボーン
+					// インデックスが -1 なら rootBone にする
+					Bone &parent = bone.parentBoneIndex == -1 ? rootBone : bones[bone.parentBoneIndex];
+
+
+					Bone *付与_parent = nullptr;
+
+
+					if (bone.付与_parentBoneIndex != -1)
+					{
+						付与_parent = &bones[bone.付与_parentBoneIndex];
+					}
+
+
+					// !!!!!!!!!!!!!!!!!!!!!
+
+
+
+					// 0. 回転量を単位回転量として開始
+					auto rotate = Quaternion::Identity();
+					// 0. 移動量を0移動量として開始
+					auto translate = Vec3::Zero;
+
+
+
+					// 付与を無視（テスト）
+
+					// 1. 当該ボーンが付与の場合 :
+					if (付与_parent)
+					{
+
+						if (!付与_parent->transformParameter.付与回転計算済)
+						{
+							end = false;
+							continue;
+						}
+
+						//  1.1 ローカル付与の場合 : * 付与親のローカル変形量(行列)の回転成分 ※ローカル付与優先
+						if (bone.flag.ローカル付与)
+						{
+							MessageBox::Show(L"ローカル付与");
+
+							// rotate *= MatrixToQuaternion(付与_parent->transformParameter.localMatrix);
+
+							// 1.1 ローカル付与の場合 : *付与親のローカル移動量 ※ローカル付与優先
+
+							// TODO: localTranslate を削除して localMatrix の移動成分にする
+							translate += 付与_parent->transformParameter.localTranslate;
+
+							// 付与親のローカル移動量:ボーン移動量として計算 ※暫定対応
+							// ボーン位置(= ローカル行列の4行1 / 2 / 3列要素) - 初期ボーン位置
+
+
+						}
+						else
+						{
+
+							// <> 付与親が付与ボーンの場合 : *付与親の付与回転量(※後述)
+							// ??????????
+							if (bone.flag.回転付与)
+							{
+
+								rotate *= 付与_parent->transformParameter._f_rotate;
+
+							}
+
+
+							/*
+							if (bone.flag.移動付与)
+							{
+							translate += 付与_parent->transformParameter._f_translate;
+							translate += 付与_parent->transformParameter.translate;
+							translate += 付与_parent->transformParameter._morph_translate;
+							}
+
+							*/
+
+						}
+					}
+
+
+					//  1.2 付与親がIKリンクの場合(且つローカル付与ではない場合) : * 付与親のIKリンク回転量
+					// ??????????
+					if (付与_parent != nullptr)
+					{
+						rotate *= 付与_parent->transformParameter._ik_r;
+					}
+
+
+					// 1.3 付与率が1以外の場合 : 回転量を付与率で補正(Quaternion.Slerp()想定)
+					// 1.2 付与率が1以外の場合 : 移動量を付与率で補正(付与率乗算でOK)
+
+					rotate = Math::Slerp( Quaternion::Identity(),rotate, bone.付与率);
+
+					translate *= bone.付与率;
+
+					bone.transformParameter._f_rotate = rotate;
+
+					bone.transformParameter.付与回転計算済 = true;
+
+
+					rotate *= bone.transformParameter.keyframeRotate;
+					rotate *= bone.transformParameter._ik_r;
+
+
+					translate += bone.transformParameter.keyframeTranslate;
+
+
+					// 2. 当該ボーンの回転量追加 : * 回転 * 回転モーフ
+					//rotate *= bone.transformParameter._morph_rotate;
+
+					bone.transformParameter.rotate = rotate;
+
+
+					// 2. 当該ボーンの移動量追加 : +移動 + 移動モーフ
+					bone.transformParameter.translate += translate + bone.transformParameter._morph_translate;
+
+
+					bone.transformParameter.translate = bone.transformParameter.keyframeTranslate;
+
+				}
+
+				if (end) break;
+			}
+
+
+
+
+			for (auto &bone : bones)
+			{
+
+				bone.transformParameter.localMatrix =
+					bone.transformParameter.rotate.toMatrix()
+					* Mat4x4::Translate(bone.transformParameter.translate);
+
+			}
+
 		}
+
+
+
 
 
 		rootBone.transformParameter.___a___ = true;
@@ -607,6 +768,7 @@ void Main()
 
 			for (auto &bone : bones)
 			{
+
 				Bone &parent = bone.parentBoneIndex == -1 ? rootBone : bones[bone.parentBoneIndex];
 
 				if (!parent.transformParameter.___a___) {
@@ -640,7 +802,6 @@ void Main()
 		for (auto &bone : bones)
 		{
 			bone.transformedPosition = bone.animationMatrix.transform(bone.position);
-
 		}
 
 
@@ -686,15 +847,10 @@ void Main()
 				auto &bone3 = bones[vertex.boneIndex3];
 				auto &bone4 = bones[vertex.boneIndex4];
 
-				auto lp1 = vertex.position;
-				auto lp2 = vertex.position;
-				auto lp3 = vertex.position;
-				auto lp4 = vertex.position;
-
-				auto v1 = bone1.animationMatrix.transform(lp1);
-				auto v2 = bone2.animationMatrix.transform(lp2);
-				auto v3 = bone3.animationMatrix.transform(lp3);
-				auto v4 = bone4.animationMatrix.transform(lp4);
+				auto v1 = bone1.animationMatrix.transform(vertex.position);
+				auto v2 = bone2.animationMatrix.transform(vertex.position);
+				auto v3 = bone3.animationMatrix.transform(vertex.position);
+				auto v4 = bone4.animationMatrix.transform(vertex.position);
 
 
 
@@ -746,8 +902,6 @@ void Main()
 
 
 
-
-
 		model.draw();
 		model.drawShadow();
 
@@ -767,7 +921,6 @@ void Main()
 
 
 		Plane(100).draw(textureGround);
-
 
 
 

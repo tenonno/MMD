@@ -12,8 +12,6 @@ namespace PMX
 	void Model::draw() const
 	{
 
-
-
 		for (auto &mesh : meshList)
 		{
 
@@ -23,7 +21,6 @@ namespace PMX
 
 
 		}
-
 
 	}
 
