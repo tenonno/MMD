@@ -8,8 +8,27 @@ namespace PMX
 {
 
 
-
 	void Model::draw() const
+	{
+
+		for (auto &mesh : meshList)
+		{
+
+			if (mesh.material.textureIndex == -1)
+			{
+				mesh.mesh.draw(mesh.material.diffuse);
+				continue;
+			}
+
+			auto &texture = textures[mesh.material.textureIndex];
+
+			mesh.mesh.draw(texture);
+
+		}
+
+	}
+
+	void Model::drawForward() const
 	{
 
 		for (auto &mesh : meshList)
@@ -17,12 +36,23 @@ namespace PMX
 
 			auto &texture = textures[mesh.material.textureIndex];
 
-			mesh.mesh.draw(texture);
-
+			mesh.mesh
+				.scaled(scale)
+				.rotated(rotate)
+				.translated(translate)
+				.drawForward(texture);
 
 		}
 
 	}
+
+
+
+
+
+
+
+
 
 	void Model::drawShadow() const
 	{
@@ -30,7 +60,11 @@ namespace PMX
 		for (auto &mesh : meshList)
 		{
 
-			mesh.mesh.drawShadow();
+			mesh.mesh
+				.scaled(scale)
+				.rotated(rotate)
+				.translated(translate)
+				.drawShadow();
 
 		}
 

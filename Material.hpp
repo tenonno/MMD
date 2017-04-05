@@ -7,8 +7,8 @@ namespace PMX
 	struct Material
 	{
 
+		ColorF diffuse;
 
-		Vec4 diffuse;
 		Vec3 specular;
 		double Specular_K;
 		Vec3 ambient;

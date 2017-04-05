@@ -211,6 +211,14 @@ namespace PMX
 
 				return static_cast<int64>(v16);
 
+			case 4:
+
+				int32 v32;
+
+				BinaryReader::read(&v32, size);
+
+				return static_cast<int64>(v32);
+
 			case 8:
 
 				int64 v64;

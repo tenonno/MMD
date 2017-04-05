@@ -241,6 +241,46 @@ public:
 
 
 
+	void apply(PMX::Model &model, const double frame)
+	{
+
+		auto &bones = model.bones;
+
+		// 0. すべてのボーンのローカル／グローバル変形状態を初期化
+		for (auto &bone : bones)
+		{
+			bone.transformParameter.reset();
+		}
+
+
+		// 1. ユーザー操作の回転／移動量をすべてのボーンに設定
+		// 2. ボーンモーフによる回転／移動量を対応するボーンに設定
+		for (auto &bone : bones)//Bone *p_bone : A$Physics_bones)
+		{
+
+			auto name = bone.name;
+
+			// キーフレームが存在しない
+			if (!has(name)) continue;
+
+
+			// frame 位置のボーン情報を取得する
+			const auto boneStatus = get(name, frame);
+
+			// 設定
+			bone.transformParameter.keyframeTranslate = boneStatus.position;
+			bone.transformParameter.keyframeRotate = boneStatus.rotation;
+
+		}
+
+
+
+		model.updateMotion();
+
+
+	}
+
+
 	VMD::Bone get(const String &name, const double frame)
 	{
 

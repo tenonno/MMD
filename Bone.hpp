@@ -62,14 +62,13 @@ namespace PMX
 	struct BoneTransformParameter
 	{
 
-
 		// VMD のキーフレームによる移動量
 		Float3 keyframeTranslate;
 		// VMD のキーフレームによる回転量
 		Quaternion keyframeRotate;
 
 		// ユーザー操作による 回転／移動量 | PMD / PMXエディタ内ではスケール値も所持
-		Vec3 translate;
+		Float3 translate;
 		Quaternion rotate;
 
 		// ボーンモーフによる 回転／移動量
@@ -87,7 +86,6 @@ namespace PMX
 		// ボーン変形処理によるローカル変形状態
 		Mat4x4 localMatrix;
 
-		Float3 localTranslate;
 
 		bool transformed = false;
 		bool ___a___ = false;
@@ -114,7 +112,24 @@ namespace PMX
 			_ik_r = Quaternion::Identity();
 			localMatrix = Mat4x4::Identity();
 
-			localTranslate = Vec3::Zero;
+
+		}
+
+	};
+
+
+
+	struct IK_Link
+	{
+
+		int64 boneIndex;
+
+		bool limit;
+		Vec3 min;
+		Vec3 max;
+
+		IK_Link()
+		{
 
 		}
 
@@ -126,9 +141,8 @@ namespace PMX
 
 		int64 targetIndex;
 
-		Array<int64> links;
-		// 仮
-		Array<int8> limits;
+		Array<IK_Link> links;
+
 
 		uint32 iteration;
 

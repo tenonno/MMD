@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Model_Constructor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -284,6 +285,7 @@
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Motion.hpp" />
     <ClInclude Include="Reader.hpp" />
+    <ClInclude Include="Sky.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Vertex.hpp" />
   </ItemGroup>

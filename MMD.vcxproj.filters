@@ -85,12 +85,18 @@
     <Filter Include="ソース ファイル\MMD\VMD">
       <UniqueIdentifier>{b95dae79-03c9-451b-9821-ff4a9ee6528b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Sky">
+      <UniqueIdentifier>{64dfc5e4-c7d5-43c2-971d-17554fa09a49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
+      <Filter>ソース ファイル\MMD\PMX</Filter>
+    </ClCompile>
+    <ClCompile Include="Model_Constructor.cpp">
       <Filter>ソース ファイル\MMD\PMX</Filter>
     </ClCompile>
   </ItemGroup>
@@ -430,6 +436,9 @@
     </ClInclude>
     <ClInclude Include="MMD.hpp">
       <Filter>ソース ファイル\MMD</Filter>
+    </ClInclude>
+    <ClInclude Include="Sky.hpp">
+      <Filter>ソース ファイル\Sky</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

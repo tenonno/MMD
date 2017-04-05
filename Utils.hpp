@@ -1,5 +1,17 @@
 #pragma once
 
+
+namespace s3d
+{
+	namespace Math
+	{
+		constexpr double PI = Pi;
+	}
+}
+
+
+
+
 namespace PMX
 {
 
@@ -32,6 +44,7 @@ inline void DrawConnectLine(Vec2 v1, Vec2 v2, double size, Color color, double t
 
 	auto L = v1 + Mat3x2::Rotate(+90_deg).transform(direction);
 	auto R = v1 + Mat3x2::Rotate(-90_deg).transform(direction);
+
 
 
 
@@ -76,9 +89,6 @@ inline void $(const Args &...args)
 
 typedef std::array<float, 3> float3;
 typedef std::array<float3, 3> float3x3;
-
-const float PI = 3.14159265358979323846264f;
-
 
 
 
