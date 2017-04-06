@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Model_Bone.cpp" />
     <ClCompile Include="Model_Constructor.cpp" />
   </ItemGroup>
   <ItemGroup>

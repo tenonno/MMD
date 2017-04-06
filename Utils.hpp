@@ -1,5 +1,8 @@
 #pragma once
 
+#include <array>
+#include <limits>
+
 
 namespace s3d
 {
@@ -8,7 +11,6 @@ namespace s3d
 		constexpr double PI = Pi;
 	}
 }
-
 
 
 
@@ -29,14 +31,12 @@ namespace PMX
 		Array<uint8> datas;
 
 
-
-
 	};
 
 }
 
 
-
+// v1 から v2 を差した線を描画する
 inline void DrawConnectLine(Vec2 v1, Vec2 v2, double size, Color color, double thickness = 1.0)
 {
 
@@ -44,8 +44,6 @@ inline void DrawConnectLine(Vec2 v1, Vec2 v2, double size, Color color, double t
 
 	auto L = v1 + Mat3x2::Rotate(+90_deg).transform(direction);
 	auto R = v1 + Mat3x2::Rotate(-90_deg).transform(direction);
-
-
 
 
 	Circle(v1, size).drawFrame(thickness / 2.0, thickness / 2.0, color);
@@ -57,23 +55,21 @@ inline void DrawConnectLine(Vec2 v1, Vec2 v2, double size, Color color, double t
 }
 
 
+// FilePath からディレクトリを取得する
 inline String GetDirectory(const FilePath &path)
 {
-
 	String directory = L"";
-
 	auto vv = path.split('/');
 	for (auto i : step(vv.size() - 1))
 	{
 		directory += vv[i] + L"/";
 	}
-
 	return directory;
-
 }
 
 
 
+// デバッグ用
 template<class ...Args>
 inline void $(const Args &...args)
 {
@@ -84,15 +80,13 @@ inline void $(const Args &...args)
 
 
 
-#include <array>
-#include <limits>
-
 typedef std::array<float, 3> float3;
 typedef std::array<float3, 3> float3x3;
 
 
 
-inline Vec3 q_eulerAngles(Quaternion q)
+// クォータニオンからオイラー角を取得する
+inline Vec3 q_eulerAngles(const Quaternion &q)
 {
 
 	double q0 = DirectX::XMVectorGetX(q.component);
@@ -102,14 +96,14 @@ inline Vec3 q_eulerAngles(Quaternion q)
 
 	return
 	{
-		atan2(2 * (q0*q1 + q2*q3), 1 - 2 * (q1*q1 + q2*q2)),
-		asin(2 * (q0*q2 - q3*q1)),
-		atan2(2 * (q0*q3 + q1*q2), 1 - 2 * (q2*q2 + q3*q3))
+		Atan2(2 * (q0 * q1 + q2 * q3), 1 - 2 * (q1 * q1 + q2 * q2)),
+		Asin(2 * (q0 * q2 - q3 * q1)),
+		Atan2(2 * (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3))
 	};
 }
 
 
-
+// オイラー角をクォータニオンに変換する
 inline Quaternion toQuaternion(double pitch, double roll, double yaw)
 {
 	double x, y, z, w;
@@ -222,14 +216,13 @@ inline Quaternion QtoEtoQ2(const Quaternion &q)
 
 	Println(fX, fY, fZ);
 
-
 	r = toQuaternion(fY, fX, fZ);
-
 
 	return r;
 }
 
 
+// クォータニオンの角度制限
 inline Quaternion QtoEtoQ(const Quaternion &q, const Vec3 &min, const Vec3 &max)
 {
 
@@ -369,7 +362,6 @@ inline Vec3 D3DXVec3RotateReg(
 
 	Vec3 lBonePos
 
-	, bool log = false
 
 )
 {

@@ -99,6 +99,9 @@
     <ClCompile Include="Model_Constructor.cpp">
       <Filter>ソース ファイル\MMD\PMX</Filter>
     </ClCompile>
+    <ClCompile Include="Model_Bone.cpp">
+      <Filter>ソース ファイル\MMD\PMX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">

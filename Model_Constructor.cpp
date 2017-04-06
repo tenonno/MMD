@@ -87,6 +87,11 @@ namespace PMX
 		auto materialIndexSize = header.datas[3];
 		auto boneIndexSize = header.datas[5];
 
+
+		auto minY = DBL_MAX;
+		auto maxY = -DBL_MAX;
+
+
 		for (auto vertexIndex : step(vertexNum))
 		{
 
@@ -94,6 +99,9 @@ namespace PMX
 
 			// 頂点座標
 			vertex.position = reader.value<Vec3>();
+
+			minY = Min(minY, vertex.position.y);
+			maxY = Max(maxY, vertex.position.y);
 
 			// 法線
 			vertex.normal = reader.value<Vec3>();
@@ -174,7 +182,7 @@ namespace PMX
 
 		}
 
-
+		height = maxY - minY;
 
 		// 面を構成している頂点の数
 		const size_t faceVertexNum = reader.value<int32>();
@@ -633,5 +641,8 @@ namespace PMX
 
 
 	}
+
+
+
 
 }

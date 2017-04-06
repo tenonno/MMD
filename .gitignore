@@ -332,7 +332,8 @@ $RECYCLE.BIN/
 [Ss]creenshot/
 
 
-Assets/
+Assets/Model/
+Assets/Motion/
 
 
 *.html

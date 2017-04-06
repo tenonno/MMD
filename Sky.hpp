@@ -32,8 +32,8 @@ public:
 
 	Sky() 
 	{
-		vs = VertexShader(L"Assets/vs.hlsl");
-		ps = PixelShader(L"Assets/ps.hlsl");
+		vs = VertexShader(L"Assets/Shader/sky_vs.hlsl");
+		ps = PixelShader(L"Assets/Shader/sky_ps.hlsl");
 	}
 
 

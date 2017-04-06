@@ -4,17 +4,12 @@
 
 
 
-
-
-
-
-
-
 namespace PMX
 {
 
-
-
+	// ボーンの接続先のタイプ
+	// Position: 座標指定
+	// Index: ボーンインデックス指定
 	enum class BoneConnectType
 	{
 

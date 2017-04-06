@@ -13,16 +13,17 @@ namespace PMX
 
 		for (auto &mesh : meshList)
 		{
-
+			// テクスチャが存在しない場合は diffuse で描画
+			// TODO: MMD モデル用のシェーダを書く
 			if (mesh.material.textureIndex == -1)
 			{
-				mesh.mesh.draw(mesh.material.diffuse);
+				transformMesh(mesh.mesh).draw(mesh.material.diffuse);
 				continue;
 			}
 
 			auto &texture = textures[mesh.material.textureIndex];
 
-			mesh.mesh.draw(texture);
+			transformMesh(mesh.mesh).draw(texture);
 
 		}
 
@@ -36,11 +37,7 @@ namespace PMX
 
 			auto &texture = textures[mesh.material.textureIndex];
 
-			mesh.mesh
-				.scaled(scale)
-				.rotated(rotate)
-				.translated(translate)
-				.drawForward(texture);
+			transformMesh(mesh.mesh).drawForward(texture);
 
 		}
 
@@ -59,12 +56,7 @@ namespace PMX
 
 		for (auto &mesh : meshList)
 		{
-
-			mesh.mesh
-				.scaled(scale)
-				.rotated(rotate)
-				.translated(translate)
-				.drawShadow();
+			transformMesh(mesh.mesh).drawShadow();
 
 		}
 
@@ -136,6 +128,16 @@ namespace PMX
 
 
 	}
+
+	TransformedMesh Model::transformMesh(const Mesh & mesh) const
+	{
+		return mesh
+			.scaled(scale)
+			.rotated(rotate)
+			.translated(position);
+	}
+
+	
 
 
 
