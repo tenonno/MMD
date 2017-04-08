@@ -10,21 +10,26 @@ namespace PMX
 
 	void Model::updateMesh()
 	{
+
+		for (auto &mesh : meshList)
 		{
 
-			for (auto &mesh : meshList)
+			Array<MeshVertex> meshVertices(mesh.mesh.num_vertices);
+
+
+			auto i = 0;
+			for (auto &vertex : meshVertices)
 			{
 
-				auto i = 0;
+				vertex.position = vertices[mesh.v_index[i]].transformedPosition;
+				vertex.normal = vertices[mesh.v_index[i]].transformedNormal.normalized();
+				vertex.texcoord = vertices[mesh.v_index[i]].texcoord;
 
-				for (auto &vertex : mesh.vertices)
-				{
-					vertex.position = vertices[mesh.v_index[i++]].transformedPosition;
-				}
-
-				mesh.mesh.fillVertices(mesh.vertices);
-
+				++i;
 			}
+			
+			mesh.mesh.fillVertices(meshVertices);
+
 		}
 	}
 
@@ -444,7 +449,7 @@ namespace PMX
 				auto lp = vertex.position;
 
 				vertex.transformedPosition = bone1.animationMatrix.transform(lp);
-
+				vertex.transformedNormal = bone1.transformParameter.localMatrix.transform(vertex.normal);
 			}
 
 			else if (vertex.weightType == WeightType::BDEF2)
@@ -460,8 +465,11 @@ namespace PMX
 				auto v1 = bone1.animationMatrix.transform(lp1);
 				auto v2 = bone2.animationMatrix.transform(lp2);
 
-				vertex.transformedPosition = Math::Lerp(v2, v1, vertex.boneWeight1);
+				auto n1 = bone1.transformParameter.localMatrix.transform(vertex.normal);
+				auto n2 = bone2.transformParameter.localMatrix.transform(vertex.normal);
 
+				vertex.transformedPosition = Math::Lerp(v2, v1, vertex.boneWeight1);
+				vertex.transformedNormal = Math::Lerp(n2, n1, vertex.boneWeight1);
 
 			}
 			else if (vertex.weightType == WeightType::BDEF4)
@@ -477,6 +485,11 @@ namespace PMX
 				auto v2 = bone2.animationMatrix.transform(vertex.position);
 				auto v3 = bone3.animationMatrix.transform(vertex.position);
 				auto v4 = bone4.animationMatrix.transform(vertex.position);
+
+				auto n1 = bone1.transformParameter.localMatrix.transform(vertex.normal);
+				auto n2 = bone2.transformParameter.localMatrix.transform(vertex.normal);
+				auto n3 = bone3.transformParameter.localMatrix.transform(vertex.normal);
+				auto n4 = bone4.transformParameter.localMatrix.transform(vertex.normal);
 
 
 
@@ -499,6 +512,13 @@ namespace PMX
 					v2 * w2 +
 					v3 * w3 +
 					v4 * w4
+					);
+
+				vertex.transformedNormal = (
+					n1 * w1 +
+					n1 * w2 +
+					n1 * w3 +
+					n1 * w4
 					);
 
 			}

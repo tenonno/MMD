@@ -100,8 +100,8 @@ namespace PMX
 			// 頂点座標
 			vertex.position = reader.value<Vec3>();
 
-			minY = Min(minY, vertex.position.y);
-			maxY = Max(maxY, vertex.position.y);
+			minY = Min(minY, (double)vertex.position.y);
+			maxY = Max(maxY, (double)vertex.position.y);
 
 			// 法線
 			vertex.normal = reader.value<Vec3>();
@@ -238,9 +238,8 @@ namespace PMX
 
 		Println(L"材質数", materialNum);
 
-		Array<PMX::Material> materialList;
-		materialList.resize(materialNum);
-
+		materials.resize(materialNum);
+		
 
 		for (auto materialIndex : step(materialNum))
 		{
@@ -315,7 +314,7 @@ namespace PMX
 			// 面の数
 			material.faceCount = material.faceVertexCount / 3;
 
-			materialList[materialIndex] = material;
+			materials[materialIndex] = material;
 
 		}
 
@@ -343,6 +342,7 @@ namespace PMX
 			bone.parentBoneIndex = reader.value(boneIndexSize);
 
 			bone.変形階層 = reader.value<int>();
+
 
 
 
@@ -497,6 +497,9 @@ namespace PMX
 
 			bones.emplace_back(bone);
 
+			boneMap[bone.name] = &bones.back();
+
+
 		}
 
 
@@ -541,8 +544,10 @@ namespace PMX
 
 
 
+
+
 		// マテリアルからメッシュを作る
-		for (auto &material : materialList)
+		for (auto &material : materials)
 		{
 			Array<MeshVertex> meshVertices;
 			Array<uint32> indices;
@@ -552,32 +557,83 @@ namespace PMX
 
 			PMXMesh pmxMesh;
 
+
+			auto _indexIndex = 0;
+
+			struct A {
+
+				uint64 vertexIndex;
+				uint64 indexIndex;
+
+				bool none = false;
+
+			};
+
+			std::unordered_map<uint64, A> overlap;
+
+			const auto find = [&_indexIndex, &overlap](const uint64 vertexIndex)
+			{
+
+				A result;
+				result.none = false;
+
+
+				// まだ頂点が登録されていないなら
+				if (!overlap.count(vertexIndex))
+				{
+					result.none = true;
+
+					result.indexIndex = _indexIndex++;
+
+				}
+				else
+				{
+
+					result = overlap[vertexIndex];
+
+
+					result.none = false;
+				}
+
+				overlap[vertexIndex] = result;
+				result.vertexIndex = vertexIndex;
+
+				return result;
+
+			};
+
 			// 面の数だけ回す
 			for (auto i : step(material.faceCount))
 			{
 
 				// 面
-				auto face = faceList[faceIndex];
+				auto &face = faceList[faceIndex];
+
+
+				A v1 = find(face.v1);
+				A v2 = find(face.v2);
+				A v3 = find(face.v3);
+
+
 
 				// TODO: 同じ頂点が既に追加されていたらそれを参照するように
 
-				meshVertices.emplace_back(vertices[face.v1].toMeshVertex());
-				meshVertices.emplace_back(vertices[face.v2].toMeshVertex());
-				meshVertices.emplace_back(vertices[face.v3].toMeshVertex());
+				if (v1.none) meshVertices.emplace_back(vertices[face.v1].toMeshVertex());
+				if (v2.none) meshVertices.emplace_back(vertices[face.v2].toMeshVertex());
+				if (v3.none) meshVertices.emplace_back(vertices[face.v3].toMeshVertex());
 
 
-				pmxMesh.v_index.emplace_back(face.v1);
-				pmxMesh.v_index.emplace_back(face.v2);
-				pmxMesh.v_index.emplace_back(face.v3);
+				if (v1.none) pmxMesh.v_index.emplace_back(face.v1);
+				if (v2.none) pmxMesh.v_index.emplace_back(face.v2);
+				if (v3.none) pmxMesh.v_index.emplace_back(face.v3);
 
-
-				indices.emplace_back(i * 3 + 0);
-				indices.emplace_back(i * 3 + 1);
-				indices.emplace_back(i * 3 + 2);
-
+				indices.emplace_back(v1.indexIndex);
+				indices.emplace_back(v2.indexIndex);
+				indices.emplace_back(v3.indexIndex);
 
 				++faceIndex;
 			}
+
 
 
 
@@ -585,7 +641,6 @@ namespace PMX
 			pmxMesh.mesh = mesh;
 			pmxMesh.material = material;
 
-			pmxMesh.vertices = std::move(meshVertices);
 
 			meshList.emplace_back(pmxMesh);
 
@@ -594,16 +649,7 @@ namespace PMX
 
 
 
-
-
-
-
-
-
-		this->materials = materialList;
-
-
-
+		
 
 
 

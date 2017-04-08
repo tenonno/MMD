@@ -285,6 +285,7 @@
     <ClInclude Include="MMD.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Motion.hpp" />
+    <ClInclude Include="Player.hpp" />
     <ClInclude Include="Reader.hpp" />
     <ClInclude Include="Sky.hpp" />
     <ClInclude Include="Utils.hpp" />

@@ -29,6 +29,8 @@ namespace PMX
 
 	}
 
+
+
 	void Model::drawForward() const
 	{
 
@@ -74,8 +76,9 @@ namespace PMX
 			if (!bone.flag.visible) continue;
 
 
-			const Vec2 position = Graphics3D::ToScreenPos(bone.transformedPosition).xy();
-
+			const Vec2 position = Graphics3D::ToScreenPos(
+				transformVertex(bone.transformedPosition)
+			).xy();
 
 
 
@@ -133,7 +136,7 @@ namespace PMX
 	{
 		return mesh
 			.scaled(scale)
-			.rotated(rotate)
+			.rotated(getRotate())
 			.translated(position);
 	}
 

@@ -30,11 +30,15 @@ public:
 	VertexShader vs;
 	PixelShader ps;
 
-	Sky() 
+	Vec3 position;
+
+	Sky() :
+		position(Vec3::Zero)
 	{
 		vs = VertexShader(L"Assets/Shader/sky_vs.hlsl");
 		ps = PixelShader(L"Assets/Shader/sky_ps.hlsl");
 	}
+
 
 
 	void draw()
@@ -59,7 +63,7 @@ public:
 
 		Graphics3D::SetRasterizerStateForward(RasterizerState(FillMode::Solid, CullMode::Front));
 
-		Sphere(Vec3::Zero, 300.0).drawForward(Palette::Gray);
+		Sphere(position, 300.0).drawForward(Palette::Gray);
 
 		Graphics3D::SetRasterizerStateForward(RasterizerState::Predefined::Default3D);
 

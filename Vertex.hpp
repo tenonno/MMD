@@ -14,12 +14,14 @@ enum class WeightType : uint8
 
 struct Vertex
 {
-	Vec3 position;
-	Vec3 normal;
-	Vec2 texcoord;
+	Float3 position;
+	Float3 normal;
+	Float2 texcoord;
 
 	// ボーン変形後の座標
 	Vec3 transformedPosition;
+
+	Float3 transformedNormal;
 
 	WeightType weightType;
 
@@ -50,6 +52,7 @@ struct Vertex
 		normal = Vec3::Zero;
 		texcoord = Vec2::Zero;
 		transformedPosition = Vec3::Zero;
+		transformedNormal = Vec3::Zero;
 		weightType = WeightType::Default;
 
 		boneIndex1 = -1;

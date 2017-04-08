@@ -443,5 +443,8 @@
     <ClInclude Include="Sky.hpp">
       <Filter>ソース ファイル\Sky</Filter>
     </ClInclude>
+    <ClInclude Include="Player.hpp">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
