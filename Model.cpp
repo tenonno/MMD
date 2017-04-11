@@ -11,7 +11,7 @@ namespace PMX
 	void Model::draw() const
 	{
 
-		for (auto &mesh : meshList)
+		for (auto &mesh : meshes)
 		{
 			// テクスチャが存在しない場合は diffuse で描画
 			// TODO: MMD モデル用のシェーダを書く
@@ -34,7 +34,7 @@ namespace PMX
 	void Model::drawForward() const
 	{
 
-		for (auto &mesh : meshList)
+		for (auto &mesh : meshes)
 		{
 
 			auto &texture = textures[mesh.material.textureIndex];
@@ -56,7 +56,7 @@ namespace PMX
 	void Model::drawShadow() const
 	{
 
-		for (auto &mesh : meshList)
+		for (auto &mesh : meshes)
 		{
 			transformMesh(mesh.mesh).drawShadow();
 

@@ -76,8 +76,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SIV3D_20160812)\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SIV3D_20160812)\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\PhysX-3.4-master\PxShared\src\pvd\include;C:\PhysX-3.4-master\APEX_1.4\shared\general\RenderDebug\public;C:\PhysX-3.4-master\APEX_1.4\include\PhysX3;C:\PhysX-3.4-master\APEX_1.4\include;C:\PhysX-3.4-master\PxShared\include;C:\PhysX-3.4-master\PhysX_3.4\Include;$(SIV3D_20160812)\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\PhysX-3.4-master\PxShared\lib\vc14win64;C:\PhysX-3.4-master\PhysX_3.4\Lib\vc14win64;$(SIV3D_20160812)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -86,8 +86,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SIV3D_20160812)\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SIV3D_20160812)\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\PhysX-3.4-master\PxShared\src\pvd\include;C:\PhysX-3.4-master\APEX_1.4\shared\general\RenderDebug\public;C:\PhysX-3.4-master\APEX_1.4\include\PhysX3;C:\PhysX-3.4-master\APEX_1.4\include;C:\PhysX-3.4-master\PxShared\include;C:\PhysX-3.4-master\PhysX_3.4\Include;$(SIV3D_20160812)\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\PhysX-3.4-master\PxShared\lib\vc14win64;C:\PhysX-3.4-master\PhysX_3.4\Lib\vc14win64;$(SIV3D_20160812)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,7 +114,8 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\PhysX-3.4-master\PxShared\src\pvd\src;C:\PhysX-3.4-master\PxShared\src\fastxml\include;C:\PhysX-3.4-master\PxShared\include\cudamanager;C:\PhysX-3.4-master\PxShared\include\filebuf;C:\PhysX-3.4-master\PxShared\include\foundation;C:\PhysX-3.4-master\PxShared\include\pvd;C:\PhysX-3.4-master\PxShared\include\task;C:\PhysX-3.4-master\PxShared\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +154,7 @@
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\PhysX-3.4-master\PxShared\src\pvd\src;C:\PhysX-3.4-master\PxShared\src\fastxml\include;C:\PhysX-3.4-master\PxShared\include\cudamanager;C:\PhysX-3.4-master\PxShared\include\filebuf;C:\PhysX-3.4-master\PxShared\include\foundation;C:\PhysX-3.4-master\PxShared\include\pvd;C:\PhysX-3.4-master\PxShared\include\task;C:\PhysX-3.4-master\PxShared\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -281,10 +283,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bone.hpp" />
+    <ClInclude Include="Initialize.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="MMD.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Motion.hpp" />
+    <ClInclude Include="PhysX.hpp" />
+    <ClInclude Include="PhysX_Render.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="Reader.hpp" />
     <ClInclude Include="Sky.hpp" />

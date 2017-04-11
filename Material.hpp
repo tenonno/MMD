@@ -23,7 +23,7 @@ namespace PMX
 		int64 textureIndex;
 		int64 sTextureIndex;
 
-		int64 toneTextureIndex;
+		int64 toneTextureIndex = -1;
 
 		// ‹¤—Lƒg[ƒ“
 		bool UTOON;

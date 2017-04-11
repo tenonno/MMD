@@ -88,6 +88,9 @@
     <Filter Include="ソース ファイル\Sky">
       <UniqueIdentifier>{64dfc5e4-c7d5-43c2-971d-17554fa09a49}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Physics">
+      <UniqueIdentifier>{de558693-555c-4400-8e2d-eda655ec4aa7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -445,6 +448,15 @@
     </ClInclude>
     <ClInclude Include="Player.hpp">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Initialize.hpp">
+      <Filter>ソース ファイル\MMD</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysX.hpp">
+      <Filter>ソース ファイル\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysX_Render.hpp">
+      <Filter>ソース ファイル\Physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

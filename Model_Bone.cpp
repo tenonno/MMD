@@ -11,7 +11,7 @@ namespace PMX
 	void Model::updateMesh()
 	{
 
-		for (auto &mesh : meshList)
+		for (auto &mesh : meshes)
 		{
 
 			Array<MeshVertex> meshVertices(mesh.mesh.num_vertices);

@@ -120,10 +120,19 @@ inline Quaternion toQuaternion(double pitch, double roll, double yaw)
 	z = t0 * t2 * t5 + t1 * t3 * t4;
 	w = t1 * t2 * t4 - t0 * t3 * t5;
 
-	return Quaternion(x, y, z, w);
+	return Quaternion((float)x, (float)y, (float)z, (float)w);
 }
 
+inline Vec3 CreatePolygonNormal(Vec3 A, Vec3 B, Vec3 C) {
 
+	Vec3 AB(B - A);
+	Vec3 BC(C - B);
+
+	Vec3 normal = AB.cross(BC);	//AB BCの外積
+	normal.normalize();//単位ベクトルにする
+
+	return normal;
+}
 
 
 inline bool closeEnough(const float& a, const float& b, const float& epsilon = std::numeric_limits<float>::epsilon()) {
@@ -235,25 +244,25 @@ inline Quaternion QtoEtoQ(const Quaternion &q, const Vec3 &min, const Vec3 &max)
 
 
 	// X軸回り
-	float fXLimit = 80.0f / 180.0f * Pi;
-	float fSX = -RotMat.r[2].m128_f32[1];    // sin(θx)
+	double fXLimit = 80.0f / 180.0f * Pi;
+	double fSX = -RotMat.r[2].m128_f32[1];    // sin(θx)
 	double fX = Asin(fSX);   // X軸回り決定
-	float fCX = (float)cos(fX);
+	double fCX = Cos(fX);
 
 	// ジンバルロック回避
 	if (fabs(fX) > fXLimit) {
 		fX = (fX < 0) ? -fXLimit : fXLimit;
-		fCX = (float)cos(fX);
+		fCX = Cos(fX);
 	}
 
 	// Y軸回り
-	float fSY = RotMat.r[2].m128_f32[0] / fCX;
-	float fCY = RotMat.r[2].m128_f32[2] / fCX;
+	double fSY = RotMat.r[2].m128_f32[0] / fCX;
+	double fCY = RotMat.r[2].m128_f32[2] / fCX;
 	double fY = Atan2(fSY, fCY);   // Y軸回り決定
 
 										 // Z軸回り
-	float fSZ = RotMat.r[0].m128_f32[1] / fCX;
-	float fCZ = RotMat.r[1].m128_f32[1] / fCX;
+	double fSZ = RotMat.r[0].m128_f32[1] / fCX;
+	double fCZ = RotMat.r[1].m128_f32[1] / fCX;
 	double fZ = Atan2(fSZ, fCZ);
 
 

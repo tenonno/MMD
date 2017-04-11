@@ -11,6 +11,8 @@ public:
 	Key left = Input::KeyA;
 	Key right = Input::KeyD;
 
+	Vec3 previousPos;
+
 
 	Player(const FilePath &path)
 		: Model(path)

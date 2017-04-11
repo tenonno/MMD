@@ -4,8 +4,10 @@
 #include <Siv3D.hpp>
 
 
+#include "Initialize.hpp"
+
 #include "Utils.hpp"
-# include "Vertex.hpp"
+#include "Vertex.hpp"
 #include "Material.hpp"
 #include "Reader.hpp"
 #include "Bone.hpp"
@@ -29,7 +31,12 @@ struct PMXMesh
 
 };
 
-
+struct alignas(16) PSPS
+{
+	Float4 edgeColor;
+	float edgeSize;
+	float useToon;
+};
 namespace PMX
 {
 
@@ -40,7 +47,7 @@ namespace PMX
 
 		Model::Model(const FilePath &path);
 
-		Array<PMXMesh> meshList;
+		Array<PMXMesh> meshes;
 		Array<Material> materials;
 		Array<Bone> bones;
 		Array<Texture> textures;
@@ -171,17 +178,96 @@ namespace PMX
 		void drawForward() const;
 
 
+
+		struct alignas(16) PS_TOON
+		{
+			Float3 lightDirection;
+			float useToon;
+		};
+
+
+		void drawMMD(const VertexShader &vs, const PixelShader &ps) const
+		{
+
+			Graphics3D::BeginVSForward(vs);
+			Graphics3D::BeginPSForward(ps);
+
+			Graphics3D::SetRasterizerStateForward(RasterizerState(FillMode::Solid, CullMode::None));
+
+			for (auto &mesh : meshes)
+			{
+				auto &material = mesh.material;
+
+
+				ConstantBuffer<PS_TOON> cv;
+				cv->lightDirection = Vec3::Down;//RandomVec3().normalize();
+				cv->useToon = 0.0;
+
+
+
+				if (material.toneTextureIndex != -1)
+				{
+					Texture texture;
+
+					if (material.UTOON) texture = MMD::GetToonTexture(material.toneTextureIndex);
+					else texture = textures[material.toneTextureIndex];
+
+					cv->useToon = 1.0;
+					Graphics3D::SetTextureForward(ShaderStage::Pixel, 1, texture);
+
+				}
+
+
+
+
+
+
+
+				if (material.textureIndex != -1)
+				{
+					Graphics3D::SetTextureForward(ShaderStage::Pixel, 0, textures[material.textureIndex]);
+				}
+
+
+
+				Graphics3D::SetConstantForward(ShaderStage::Pixel, 1, cv);
+
+
+				Graphics3D::SetSamplerStateForward(SamplerState::Default3D);
+
+				transformMesh(mesh.mesh).drawForward();
+
+			}
+
+			Graphics3D::SetRasterizerStateForward(RasterizerState::Predefined::Default3D);
+
+			Graphics3D::EndVSForward();
+			Graphics3D::EndPSForward();
+
+
+
+
+
+
+
+
+
+
+
+		}
+
+
 		void drawBoader(const VertexShader &vs, const PixelShader &ps) const
 		{
 
 			Graphics3D::BeginVSForward(vs);
 			Graphics3D::BeginPSForward(ps);
 
+
 			Graphics3D::SetRasterizerStateForward(RasterizerState(FillMode::Solid, CullMode::Front));
 
-			for (auto &mesh : meshList)
+			for (auto &mesh : meshes)
 			{
-
 
 				transformMesh(mesh.mesh).drawForward();
 
@@ -190,6 +276,10 @@ namespace PMX
 
 			Graphics3D::EndVSForward();
 			Graphics3D::EndPSForward();
+
+
+
+
 		}
 
 		void drawShadow() const;

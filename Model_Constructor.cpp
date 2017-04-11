@@ -545,6 +545,13 @@ namespace PMX
 
 
 
+		struct A {
+
+			uint64 indexIndex;
+
+			bool none = false;
+
+		};
 
 		// マテリアルからメッシュを作る
 		for (auto &material : materials)
@@ -560,18 +567,10 @@ namespace PMX
 
 			auto _indexIndex = 0;
 
-			struct A {
-
-				uint64 vertexIndex;
-				uint64 indexIndex;
-
-				bool none = false;
-
-			};
 
 			std::unordered_map<uint64, A> overlap;
 
-			const auto find = [&_indexIndex, &overlap](const uint64 vertexIndex)
+			const auto find = [&](const uint64 vertexIndex)
 			{
 
 				A result;
@@ -596,7 +595,6 @@ namespace PMX
 				}
 
 				overlap[vertexIndex] = result;
-				result.vertexIndex = vertexIndex;
 
 				return result;
 
@@ -616,8 +614,6 @@ namespace PMX
 
 
 
-				// TODO: 同じ頂点が既に追加されていたらそれを参照するように
-
 				if (v1.none) meshVertices.emplace_back(vertices[face.v1].toMeshVertex());
 				if (v2.none) meshVertices.emplace_back(vertices[face.v2].toMeshVertex());
 				if (v3.none) meshVertices.emplace_back(vertices[face.v3].toMeshVertex());
@@ -627,14 +623,12 @@ namespace PMX
 				if (v2.none) pmxMesh.v_index.emplace_back(face.v2);
 				if (v3.none) pmxMesh.v_index.emplace_back(face.v3);
 
-				indices.emplace_back(v1.indexIndex);
-				indices.emplace_back(v2.indexIndex);
-				indices.emplace_back(v3.indexIndex);
+				indices.push_back(v1.indexIndex);
+				indices.push_back(v2.indexIndex);
+				indices.push_back(v3.indexIndex);
 
 				++faceIndex;
 			}
-
-
 
 
 			auto mesh = DynamicMesh(MeshData(meshVertices, indices));
@@ -642,7 +636,7 @@ namespace PMX
 			pmxMesh.material = material;
 
 
-			meshList.emplace_back(pmxMesh);
+			meshes.emplace_back(pmxMesh);
 
 
 		}
